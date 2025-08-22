@@ -2,20 +2,20 @@
 
 import { Canvas } from "@react-three/fiber";
 import { ReactNode } from "react";
-import HomeBackgroundPlane from "./background/HomeBackgroundPlane";
+import BackgroundPlane from "./background/BackgroundPlane";
 
-interface PageWithBackgroundProps {
+interface BackgroundPlaneProps {
 	children: ReactNode;
 	className?: string;
 }
 
-export default function PageWithBackground({ children, className = "" }: PageWithBackgroundProps) {
+export default function PageCanvas({ children, className = "" }: BackgroundPlaneProps) {
 	return (
 		<div className={`relative min-h-screen ${className}`}>
 			{/* Three.js Canvas Background */}
 			<div className="fixed inset-0 -z-10">
 				<Canvas camera={{ position: [0, 0, 5], fov: 75 }} gl={{ antialias: true, alpha: true }} dpr={[1, 2]}>
-					<HomeBackgroundPlane />
+					<BackgroundPlane />
 				</Canvas>
 			</div>
 

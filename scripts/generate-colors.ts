@@ -349,9 +349,9 @@ function writeFiles() {
   console.log('✅ Generated globals.css');
 
   // Write colors.ts
-  const colorsPath = path.join(srcDir, 'resources', 'colours.ts');
+  const colorsPath = path.join(srcDir, 'resources', 'colors.ts');
   fs.writeFileSync(colorsPath, generateThreeJsColors());
-  console.log('✅ Generated colours.ts');
+  console.log('✅ Generated colors.ts');
 }
 
 // Run the script

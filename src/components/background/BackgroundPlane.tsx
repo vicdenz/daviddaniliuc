@@ -5,7 +5,7 @@ import { extend, useFrame, useThree } from "@react-three/fiber";
 import React, { type FC, useRef } from "react";
 import { Color } from "three";
 
-import { WASHED_WHITE_VEC3_RGB, WOOD_BROWN_VEC3_RGB, WOOD_BROWN_LIGHT_VEC3_RGB } from "@/resources/colours";
+import { WASHED_WHITE_VEC3_RGB, WOOD_BROWN_VEC3_RGB, WOOD_BROWN_LIGHT_VEC3_RGB } from "@/resources/colors";
 
 import bgFragment from "./background.frag";
 import bgVertex from "./background.vert";
@@ -13,16 +13,16 @@ import bgVertex from "./background.vert";
 type Uniforms = {
 	uTime: number;
 	uAspect: number;
-	uWashedWhiteColour: Color;
-	uWoodBrownColour: Color;
-	uWoodBrownLightColour: Color;
+	uWashedWhiteColor: Color;
+	uWoodBrownColor: Color;
+	uWoodBrownLightColor: Color;
 };
 
 const INITIAL_UNIFORMS: Partial<Uniforms> = {
 	uTime: 0,
-	uWashedWhiteColour: WASHED_WHITE_VEC3_RGB,
-	uWoodBrownColour: WOOD_BROWN_VEC3_RGB,
-	uWoodBrownLightColour: WOOD_BROWN_VEC3_RGB,
+	uWashedWhiteColor: WASHED_WHITE_VEC3_RGB,
+	uWoodBrownColor: WOOD_BROWN_VEC3_RGB,
+	uWoodBrownLightColor: WOOD_BROWN_VEC3_RGB,
 };
 
 const CustomShaderMaterial = shaderMaterial(INITIAL_UNIFORMS, bgVertex, bgFragment);

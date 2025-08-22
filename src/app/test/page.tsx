@@ -1,8 +1,8 @@
-import PageWithBackground from "@/components/PageWithBackground";
+import PageCanvas from "@/components/PageCanvas";
 
 export default function TestPage() {
 	return (
-		<PageWithBackground>
+		<PageCanvas>
 			<main className="flex items-center justify-center min-h-screen px-6">
 				<div className="text-center">
 					<h1 className="font-heading text-6xl md:text-8xl text-deep-charcoal mb-8">Test</h1>
@@ -16,6 +16,6 @@ export default function TestPage() {
 					</div>
 				</div>
 			</main>
-		</PageWithBackground>
+		</PageCanvas>
 	);
 }

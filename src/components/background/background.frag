@@ -4,9 +4,9 @@
 
 uniform float uTime;
 uniform float uAspect;
-uniform vec3 uWashedWhiteColour;
-uniform vec3 uWoodBrownColour;
-uniform vec3 uWoodBrownLightColour;
+uniform vec3 uWashedWhiteColor;
+uniform vec3 uWoodBrownColor;
+uniform vec3 uWoodBrownLightColor;
 
 varying vec2 vUv;
 
@@ -15,21 +15,21 @@ void main() {
   float noiseA = noise(vec3(vUv * 2., uTime * 0.2)) * 0.5 + 0.5;
   float noiseB = noise(vec3(vUv * 4., uTime * 0.1)) * 0.5 + 0.5;
 
-  // mix 3 colours based on noise values
-  vec3 colour = mix(mix(uWashedWhiteColour, uWoodBrownLightColour, noiseB), uWoodBrownColour, noiseA);
+  // mix 3 colors based on noise values
+  vec3 color = mix(mix(uWashedWhiteColor, uWoodBrownLightColor, noiseB), uWoodBrownColor, noiseA);
 
   // vignette
   vec2 uv = vUv * 2.0 - 1.0;
   uv.x *= uAspect;
   float vignette = distance(uv, vec2(0.0));
   float vig = smoothstep(0.6, 1.2, vignette);
-  colour = mix(colour, uWoodBrownColour, vig);
+  color = mix(color, uWoodBrownColor, vig);
 
   // high frequency noise for a grainy effect
   float noiseV = noise(vec3(vUv * 400.0, uTime)); 
-  vec3 noiseColour = mix(colour, uWoodBrownLightColour, noiseV);
+  vec3 noiseColor = mix(color, uWoodBrownLightColor, noiseV);
 
-  colour = mix(colour, noiseColour, 0.2);
+  color = mix(color, noiseColor, 0.2);
 
-  gl_FragColor = vec4(colour, 1.0);
+  gl_FragColor = vec4(color, 1.0);
 }
