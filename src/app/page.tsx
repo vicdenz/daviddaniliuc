@@ -1,103 +1,218 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState } from "react";
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+	const [scrollY, setScrollY] = useState(0);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+	useEffect(() => {
+		const handleScroll = () => setScrollY(window.scrollY);
+		window.addEventListener("scroll", handleScroll, { passive: true });
+
+		// Intersection Observer for fade-in animations
+		const observerOptions = {
+			threshold: 0.1,
+			rootMargin: "0px 0px -50px 0px",
+		};
+
+		const observer = new IntersectionObserver((entries) => {
+			entries.forEach((entry) => {
+				if (entry.isIntersecting) {
+					entry.target.classList.add("is-visible");
+				}
+			});
+		}, observerOptions);
+
+		// Observe all sections for fade-in effect
+		const sections = document.querySelectorAll(".fade-in-section");
+		sections.forEach((section) => observer.observe(section));
+
+		return () => {
+			window.removeEventListener("scroll", handleScroll);
+			observer.disconnect();
+		};
+	}, []);
+
+	return (
+		<div className="min-h-screen bg-washed-white text-deep-charcoal">
+			{/* Main Content */}
+			<main className="max-w-2xl mx-auto px-6 py-16 md:py-24">
+				{/* Header */}
+				<header className="mb-16 animate-fade-in-up">
+					<h1 className="font-heading text-4xl md:text-5xl lg:text-6xl text-deep-charcoal mb-6 leading-tight">
+						i'm <span className="italic text-moss-green">david</span>, a thoughtful developer based in [your location].
+					</h1>
+
+					<p className="text-lg md:text-xl text-charcoal-soft leading-relaxed mb-8 animate-fade-in-up delay-200">I craft digital experiences with the same care and intentionality as tending a bonsai garden.</p>
+
+					<div className="w-24 h-px bg-stone-gray mb-8 animate-fade-in delay-300"></div>
+				</header>
+
+				{/* Recent Highlights */}
+				<section className="mb-16 fade-in-section">
+					<h2 className="font-heading text-2xl md:text-3xl text-deep-charcoal mb-8">Recent Highlights</h2>
+
+					<div className="space-y-6">
+						<div className="group animate-fade-in-up delay-100">
+							<p className="text-charcoal-soft leading-relaxed hover:text-deep-charcoal transition-colors duration-300">
+								Built <span className="text-moss-green font-medium">ProjectName</span> (10,000+ users, featured on Product Hunt, interest from top-tier VCs)
+							</p>
+						</div>
+
+						<div className="group animate-fade-in-up delay-200">
+							<p className="text-charcoal-soft leading-relaxed hover:text-deep-charcoal transition-colors duration-300">
+								Shipped <span className="text-moss-green font-medium">FastApp</span> in under 24 hours (1,000+ users, trending on Hacker News)
+							</p>
+						</div>
+
+						<div className="group animate-fade-in-up delay-300">
+							<p className="text-charcoal-soft leading-relaxed hover:text-deep-charcoal transition-colors duration-300">Led engineering team of 5+ developers, scaling platform to 50,000+ active users</p>
+						</div>
+
+						<div className="group animate-fade-in-up delay-400">
+							<p className="text-charcoal-soft leading-relaxed hover:text-deep-charcoal transition-colors duration-300">
+								Open-sourced <span className="text-moss-green font-medium">BonsaiLib</span> - minimalist design system (500+ GitHub stars)
+							</p>
+						</div>
+					</div>
+
+					<div className="mt-8 flex flex-wrap gap-4 animate-fade-in-up delay-500">
+						<a href="#projects" className="inline-flex items-center text-clay-red hover:text-deep-charcoal transition-all duration-300 font-medium group">
+							Checkout what I've built
+							<span className="ml-2 transition-transform group-hover:translate-x-1">→</span>
+						</a>
+						<a href="#about" className="inline-flex items-center text-clay-red hover:text-deep-charcoal transition-all duration-300 font-medium group">
+							Learn more about me
+							<span className="ml-2 transition-transform group-hover:translate-x-1">→</span>
+						</a>
+					</div>
+				</section>
+
+				{/* Experience */}
+				<section className="mb-16 fade-in-section">
+					<h2 className="font-heading text-2xl md:text-3xl text-deep-charcoal mb-8">Experience</h2>
+
+					<div className="space-y-8">
+						<div className="group hover:bg-stone-gray-light/20 rounded-lg p-4 -m-4 transition-all duration-300">
+							<div className="flex items-start gap-4">
+								<div className="w-12 h-12 bg-moss-green/10 rounded-lg flex items-center justify-center flex-shrink-0 mt-1 group-hover:bg-moss-green/20 transition-colors duration-300">
+									<span className="text-lg">🏢</span>
+								</div>
+								<div className="flex-1">
+									<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2">
+										<h3 className="font-heading text-lg text-deep-charcoal">
+											<span className="text-moss-green font-medium">Company Name</span> (2024)
+										</h3>
+										<span className="text-sm text-charcoal-soft">Senior Developer, Remote</span>
+									</div>
+									<p className="text-charcoal-soft text-sm leading-relaxed">Led full-stack development, architected scalable systems, mentored junior developers</p>
+								</div>
+							</div>
+						</div>
+
+						<div className="group hover:bg-stone-gray-light/20 rounded-lg p-4 -m-4 transition-all duration-300">
+							<div className="flex items-start gap-4">
+								<div className="w-12 h-12 bg-clay-red/10 rounded-lg flex items-center justify-center flex-shrink-0 mt-1 group-hover:bg-clay-red/20 transition-colors duration-300">
+									<span className="text-lg">🚀</span>
+								</div>
+								<div className="flex-1">
+									<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2">
+										<h3 className="font-heading text-lg text-deep-charcoal">
+											<span className="text-moss-green font-medium">Startup Inc</span> (2023 - 2024)
+										</h3>
+										<span className="text-sm text-charcoal-soft">Frontend Lead, San Francisco</span>
+									</div>
+									<p className="text-charcoal-soft text-sm leading-relaxed">Built design systems, optimized performance, shipped features to 100k+ users</p>
+								</div>
+							</div>
+						</div>
+
+						<div className="group hover:bg-stone-gray-light/20 rounded-lg p-4 -m-4 transition-all duration-300">
+							<div className="flex items-start gap-4">
+								<div className="w-12 h-12 bg-wood-brown/10 rounded-lg flex items-center justify-center flex-shrink-0 mt-1 group-hover:bg-wood-brown/20 transition-colors duration-300">
+									<span className="text-lg">🎓</span>
+								</div>
+								<div className="flex-1">
+									<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2">
+										<h3 className="font-heading text-lg text-deep-charcoal">
+											<span className="text-moss-green font-medium">University</span> (2022 - 2023)
+										</h3>
+										<span className="text-sm text-charcoal-soft">Research Assistant, [Location]</span>
+									</div>
+									<p className="text-charcoal-soft text-sm leading-relaxed">Machine learning research, published papers, contributed to open-source projects</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</section>
+
+				{/* Current Focus */}
+				<section className="mb-16 fade-in-section">
+					<h2 className="font-heading text-2xl md:text-3xl text-deep-charcoal mb-6">What I'm building</h2>
+
+					<div className="bg-stone-gray-light/30 rounded-lg p-6 border border-stone-gray/20 hover:border-moss-green/30 transition-all duration-300 hover:shadow-lg">
+						<div className="flex items-start gap-4">
+							<div className="w-3 h-3 bg-moss-green rounded-full flex-shrink-0 mt-2 animate-gentle-pulse"></div>
+							<div>
+								<p className="text-charcoal-soft leading-relaxed mb-4">
+									Currently working on <span className="text-moss-green font-medium">NextProject</span> - a minimalist tool for developers who value intentional design.
+								</p>
+								<p className="text-sm text-charcoal-soft">→ Launching in Q2 2024 • Built with Next.js, TypeScript, and careful attention to detail</p>
+							</div>
+						</div>
+					</div>
+				</section>
+
+				{/* Skills */}
+				<section className="mb-16 fade-in-section">
+					<h2 className="font-heading text-2xl md:text-3xl text-deep-charcoal mb-6">Technologies</h2>
+
+					<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+						{["React/Next.js", "TypeScript", "Node.js", "Python", "PostgreSQL", "Design Systems", "Architecture", "DevOps"].map((tech, index) => (
+							<div key={tech} className="group animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+								<div className="text-sm text-moss-green font-medium tracking-wide mb-1 group-hover:text-moss-green-light transition-colors duration-300">{tech}</div>
+								<div className="w-full h-px bg-stone-gray group-hover:bg-moss-green transition-all duration-300 transform group-hover:scale-x-110 origin-left"></div>
+							</div>
+						))}
+					</div>
+				</section>
+
+				{/* Connect */}
+				<section className="mb-16 fade-in-section">
+					<h2 className="font-heading text-2xl md:text-3xl text-deep-charcoal mb-6">Connect</h2>
+
+					<div className="flex flex-wrap gap-6">
+						<a href="mailto:your@email.com" className="text-clay-red hover:text-deep-charcoal transition-all duration-300 font-medium hover:-translate-y-0.5">
+							email
+						</a>
+						<a href="https://linkedin.com/in/yourprofile" className="text-clay-red hover:text-deep-charcoal transition-all duration-300 font-medium hover:-translate-y-0.5">
+							linkedin
+						</a>
+						<a href="https://github.com/yourusername" className="text-clay-red hover:text-deep-charcoal transition-all duration-300 font-medium hover:-translate-y-0.5">
+							github
+						</a>
+						<a href="https://twitter.com/yourusername" className="text-clay-red hover:text-deep-charcoal transition-all duration-300 font-medium hover:-translate-y-0.5">
+							twitter
+						</a>
+						<a href="/resume.pdf" className="text-clay-red hover:text-deep-charcoal transition-all duration-300 font-medium hover:-translate-y-0.5">
+							resume
+						</a>
+						<a href="/test" className="text-moss-green hover:text-deep-charcoal transition-all duration-300 font-medium hover:-translate-y-0.5">
+							three.js demo
+						</a>
+					</div>
+				</section>
+
+				{/* Footer */}
+				<footer className="border-t border-stone-gray/20 pt-8 fade-in-section">
+					<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+						<div className="text-sm text-charcoal-soft">2024 © David Daniliuc</div>
+						<div className="text-xs text-charcoal-soft italic">
+							"Every line of code, a careful branch" <span className="animate-gentle-float inline-block">🌿</span>
+						</div>
+					</div>
+				</footer>
+			</main>
+		</div>
+	);
 }

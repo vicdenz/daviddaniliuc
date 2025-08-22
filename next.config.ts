@@ -1,7 +1,20 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
+    sassOptions: {
+        silenceDeprecations: ['legacy-js-api'],
+    },
+	experimental: {
+        turbo: {
+            rules: {
+                '*.{glsl,vs,fs,vert,frag}': {
+                    loaders: ['raw-loader', 'glslify-loader'],
+                    as: '*.js',
+                },
+            },
+        },
+    },
+
 };
 
 export default nextConfig;
