@@ -6,8 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "generate:colors": "tsx scripts/generate-colors.ts"
+    "lint": "next lint"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.3",
