@@ -24,7 +24,7 @@ varying vec2 vUv;
 
 void main() {        
   // Normalized noise values with different uv scales
-  float noiseA = noise(vec3(vUv * 2., uTime * 0.2)) * 0.6 + 0.4;
+  float noiseA = noise(vec3(vUv * 2., uTime * 0.25)) * 0.6 + 0.4;
   float noiseB = noise(vec3(vUv * 4., uTime * 0.1)) * 0.5 + 0.5;
 
   // mix 3 colors based on noise values
