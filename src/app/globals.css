@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300..800&family=Funnel+Sans:ital,wght@0,300..800;1,300..800&display=swap");
 @import "tailwindcss";
 
 :root {
@@ -19,9 +19,9 @@
 	--bamboo-mist: #e5e8e0;
 	--tea-stain: #f2ede4;
 
-	/* Typography */
-	--font-heading: "Crimson Text", serif;
-	--font-body: "Inter", sans-serif;
+	/* Typography - Base Font Families */
+	--font-sans: "Funnel Sans", "Trebuchet MS", "Verdana", Geneva, sans-serif;
+	--font-display: "Funnel Display", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 
 	/* Spacing & Layout */
 	--container-max: 1200px;
@@ -50,10 +50,10 @@
 	--color-calligraphy-black: var(--calligraphy-black);
 	--color-silk-white: var(--silk-white);
 
-	/* Typography */
-	--font-family-heading: var(--font-heading);
-	--font-family-body: var(--font-body);
-	--font-family-sans: var(--font-body);
+	/* Typography - Semantic Font Assignments */
+	--font-family-heading: var(--font-sans);
+	--font-family-body: var(--font-display);
+	--font-family-sans: var(--font-sans);
 
 	/* Background and foreground */
 	--color-background: var(--washed-white);
@@ -72,8 +72,7 @@ html {
 body {
 	background: var(--washed-white);
 	color: var(--deep-charcoal);
-	font-family: var(--font-body);
-	font-weight: 400;
+	font-family: var(--font-sans);
 	line-height: 1.7;
 	letter-spacing: 0.01em;
 	-webkit-font-smoothing: antialiased;
@@ -87,8 +86,6 @@ h3,
 h4,
 h5,
 h6 {
-	font-family: var(--font-heading);
-	font-weight: 400;
 	line-height: 1.3;
 	letter-spacing: 0.02em;
 	margin: 0;
@@ -322,4 +319,36 @@ button:active {
 	.animate-gentle-pulse {
 		animation: none;
 	}
+}
+
+/* Semi-transparent glass card */
+.glass-card {
+	background: rgba(255, 255, 255, 0.2);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+	border-radius: 20px;
+	border: 1px solid rgba(255, 255, 255, 0.15);
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(255, 255, 255, 0.1), inset 0 0 6px 3px rgba(255, 255, 255, 0.1);
+	position: relative;
+	overflow: hidden;
+}
+
+.glass-card::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 1px;
+	background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+}
+
+.glass-card::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 1px;
+	height: 100%;
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.8), transparent, rgba(255, 255, 255, 0.3));
 }
