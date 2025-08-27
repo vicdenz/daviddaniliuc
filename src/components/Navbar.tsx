@@ -2,7 +2,7 @@ import React from "react";
 
 export default function Navbar() {
 	return (
-		<header className="sticky top-0 z-50 bg-rice-paper/95 backdrop-blur-sm border-b border-stone-gray/20">
+		<header className="sticky top-0 z-50 bg-washed-white">
 			<div className="max-w-6xl mx-auto px-6 py-4">
 				<div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
 					{/* Name */}

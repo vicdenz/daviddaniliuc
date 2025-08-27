@@ -5,26 +5,14 @@
 uniform float uTime;
 uniform float uAspect;
 uniform vec3 uWashedWhiteColor;
-uniform vec3 uWoodBrownColor;
-uniform vec3 uWoodBrownLightColor;
 uniform vec3 uRicePaperColor;
-uniform vec3 uScrollBeigeColor;
-uniform vec3 uInkWashColor;
-uniform vec3 uBambooMistColor;
-uniform vec3 uTeaStainColor;
-uniform vec3 uStoneGrayColor;
-uniform vec3 uStoneGrayLightColor;
-uniform vec3 uCharcoalSoftColor;
 uniform vec3 uMossGreenColor;
-uniform vec3 uMossGreenLightColor;
-uniform vec3 uClayRedColor;
-uniform vec3 uClayRedSoftColor;
 
 varying vec2 vUv;
 
 void main() {        
   // Normalized noise values with different uv scales
-  float noiseA = noise(vec3(vUv * 2., uTime * 0.4)) * 0.5 + 0.5;
+  float noiseA = noise(vec3(vUv * 2., uTime * 0.25)) * 0.4 + 0.6;
   float noiseB = noise(vec3(vUv * 4., uTime * 0.1)) * 0.6 + 0.4;
 
   // mix 3 colors based on noise values

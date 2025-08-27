@@ -5,7 +5,7 @@ import Card from "@/components/Card";
 import Navbar from "@/components/Navbar";
 import { useEffect, useState } from "react";
 
-export default function Home() {
+export default function TestPage() {
 	const [scrollY, setScrollY] = useState(0);
 
 	useEffect(() => {
