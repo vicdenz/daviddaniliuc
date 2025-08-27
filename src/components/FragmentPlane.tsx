@@ -53,7 +53,7 @@ const INITIAL_UNIFORMS: Partial<Uniforms> = {
 	uTeaStainColor: VEC3_COLORS.TEA_STAIN,
 };
 
-const CustomShaderMaterial = shaderMaterial(INITIAL_UNIFORMS, bgVertex, metaballsFragment);
+const CustomShaderMaterial = shaderMaterial(INITIAL_UNIFORMS, bgVertex, blurFragment);
 const BackgroundShaderMaterial = extend(CustomShaderMaterial);
 
 const BackgroundPlane: FC = () => {
