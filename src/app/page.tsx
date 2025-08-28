@@ -6,7 +6,7 @@ export default function Home() {
 		<PageCanvas className="text-deep-charcoal">
 			{/* <Navbar /> */}
 			<main className="max-w-4xl mx-auto py-6 px-8">
-				<header className="mb-20 animate-fade-in-up text-center">
+				<header className="my-20 animate-fade-in-up text-center">
 					<div className="inline-flex items-center gap-3 mb-6">
 						<h1 className="font-heading text-5xl md:text-6xl lg:text-7xl text-deep-charcoal font-bold">David Daniliuc</h1>
 					</div>
