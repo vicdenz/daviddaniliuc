@@ -8,11 +8,10 @@ uniform vec3 uWashedWhiteColor;
 uniform vec3 uRicePaperColor;
 uniform vec3 uMossGreenColor;
 
-varying vec2 vUv;
+uniform vec3 uTeaStainColor;
+uniform vec3 uDeepCharcoalColor;
 
-float random(vec2 st) {
-  return fract(sin(dot(st.xy,vec2(12.9898,78.233)))*43758.5453123);
-}
+varying vec2 vUv;
 
 void main() {
   // Normalized noise values with different uv scales
@@ -20,22 +19,21 @@ void main() {
   float noiseB = noise(vec3(vUv * 4., uTime * 0.15)) * 0.6 + 0.4;
 
   // mix 3 colors based on noise values
-  vec3 color = mix(uWashedWhiteColor, uMossGreenColor, noiseA);
+  vec4 color = mix(vec4(0.), vec4(uMossGreenColor, 1.0), noiseA);
+
+  // high frequency noise for a grainy effect
+  float noiseV = noise(vec3(vUv * 800.0, uTime)) * 0.8 + 0.2;
+  vec4 noiseColor = mix(color, vec4(uRicePaperColor, 1.0), noiseV);
+  color = mix(color, noiseColor, 0.2);
 
   // vignette
   vec2 uv = vUv * 2.0 - 1.0;
   uv.x *= uAspect;
-  float vignette = distance(uv, vec2(-0.0));
+  float vignette = distance(uv, vec2(0.0));
 //   float vig = smoothstep(min(0.55, max(0.35, noiseB)), max(0.6, noiseB), vignette);
 //   color = mix(uWashedWhiteColor, color, vig);
-  float fade = smoothstep(min(0.65, max(0.5, noiseB)), 1.0, vUv.y);
-  color = mix(uWashedWhiteColor, color, fade);
+  float fade = smoothstep(min(0.65, max(0.55, noiseB)), 1.0, vUv.y);
+  color = mix(vec4(0.), color, fade);
 
-  // high frequency noise for a grainy effect
-  float noiseV = noise(vec3(vUv * 800.0, uTime)) * 0.8 + 0.2;
-  vec3 noiseColor = mix(color, uRicePaperColor, noiseV);
-
-  color = mix(color, noiseColor, 0.2);
-
-  gl_FragColor = vec4(color, 1);
+  gl_FragColor = color;
 }

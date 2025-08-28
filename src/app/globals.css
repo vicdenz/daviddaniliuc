@@ -70,8 +70,8 @@ html {
 }
 
 body {
-	background: var(--washed-white);
-	color: var(--deep-charcoal);
+	color: var(--washed-white);
+	background: var(--deep-charcoal);
 	font-family: var(--font-sans);
 	line-height: 1.7;
 	letter-spacing: 0.01em;
