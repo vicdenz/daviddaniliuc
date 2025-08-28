@@ -352,3 +352,8 @@ button:active {
 	height: 100%;
 	background: linear-gradient(180deg, rgba(255, 255, 255, 0.8), transparent, rgba(255, 255, 255, 0.3));
 }
+
+/* Very large and gradual outward white shadow */
+.body-shadow {
+	box-shadow: 0 0 80px 100px var(--washed-white);
+}
