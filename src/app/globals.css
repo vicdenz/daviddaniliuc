@@ -51,9 +51,8 @@
 	--color-silk-white: var(--silk-white);
 
 	/* Typography - Semantic Font Assignments */
-	--font-family-heading: var(--font-sans);
-	--font-family-body: var(--font-display);
-	--font-family-sans: var(--font-sans);
+	--font-display: var(--font-display);
+	--font-sans: var(--font-sans);
 
 	/* Background and foreground */
 	--color-background: var(--washed-white);
@@ -89,19 +88,6 @@ h6 {
 	line-height: 1.3;
 	letter-spacing: 0.02em;
 	margin: 0;
-}
-
-/* Subtle texture overlay */
-body::before {
-	content: "";
-	position: fixed;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	background: radial-gradient(circle at 25% 25%, rgba(110, 124, 96, 0.02) 0%, transparent 50%), radial-gradient(circle at 75% 75%, rgba(160, 92, 78, 0.01) 0%, transparent 50%);
-	pointer-events: none;
-	z-index: -1;
 }
 
 /* Custom scrollbar */
@@ -218,12 +204,26 @@ a::after {
 	}
 }
 
+@keyframes fadeInLeft {
+	from {
+		opacity: 0;
+		transform: translateX(-30px);
+	}
+	to {
+		opacity: 1;
+		transform: translateX(0);
+	}
+}
+
 /* Animation utilities */
 .animate-fade-in-up {
+	opacity: 0;
+	transform: translateY(30px);
 	animation: fadeInUp 1s ease-out forwards;
 }
 
 .animate-fade-in {
+	opacity: 0;
 	animation: fadeIn 1s ease-out forwards;
 }
 
@@ -233,6 +233,12 @@ a::after {
 
 .animate-gentle-pulse {
 	animation: gentlePulse 4s ease-in-out infinite;
+}
+
+.animate-fade-in-left {
+	opacity: 0;
+	transform: translateX(-30px);
+	animation: fadeInLeft 1s ease-out forwards;
 }
 
 /* Delay classes for staggered animations */

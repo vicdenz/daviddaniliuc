@@ -19,7 +19,7 @@ void main() {
   float noiseB = noise(vec3(vUv * 4., uTime * 0.15)) * 0.6 + 0.4;
 
   // mix 3 colors based on noise values
-  vec4 color = mix(vec4(0.), vec4(uMossGreenColor, 1.0), noiseA);
+  vec4 color = mix(vec4(0.0), vec4(uMossGreenColor, 1.0), noiseA);
 
   // high frequency noise for a grainy effect
   float noiseV = noise(vec3(vUv * 800.0, uTime)) * 0.8 + 0.2;
@@ -27,13 +27,13 @@ void main() {
   color = mix(color, noiseColor, 0.2);
 
   // vignette
-  vec2 uv = vUv * 2.0 - 1.0;
-  uv.x *= uAspect;
-  float vignette = distance(uv, vec2(0.0));
+//   vec2 uv = vUv * 2.0 - 1.0;
+//   uv.x *= uAspect;
+//   float vignette = distance(uv, vec2(0.0));
 //   float vig = smoothstep(min(0.55, max(0.35, noiseB)), max(0.6, noiseB), vignette);
 //   color = mix(uWashedWhiteColor, color, vig);
   float fade = smoothstep(min(0.65, max(0.55, noiseB)), 1.0, vUv.y);
-  color = mix(vec4(0.), color, fade);
+  color = mix(vec4(0.0), color, fade);
 
   gl_FragColor = color;
 }

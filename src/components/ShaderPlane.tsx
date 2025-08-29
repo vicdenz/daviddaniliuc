@@ -65,7 +65,6 @@ const BackgroundPlane: FC = () => {
 		shader.current.uTime = clock.elapsedTime;
 	});
 
-	console.log(viewport.aspect);
 	return (
 		<Plane args={[viewport.width * 3, viewport.height * 3, 1, 1]} position={[0, 0, -6]}>
 			<BackgroundShaderMaterial key={CustomShaderMaterial.key} ref={shader} {...INITIAL_UNIFORMS} uAspect={viewport.aspect} />
