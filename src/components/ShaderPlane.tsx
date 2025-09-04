@@ -8,8 +8,8 @@ import { Color } from "three";
 import { VEC3_COLORS } from "@/resources/colors";
 
 import blurFragment from "./shaders/frag/blur.frag";
-import smokeFragment from "./shaders/frag/smoke.frag";
-import metaballsFragment from "./shaders/frag/metaballs.frag";
+// import smokeFragment from "./shaders/frag/smoke.frag";
+// import metaballsFragment from "./shaders/frag/metaballs.frag";
 import bgVertex from "./shaders/vert/background.vert";
 
 type Uniforms = {

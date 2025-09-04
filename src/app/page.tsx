@@ -1,28 +1,10 @@
-"use client";
-
-import { useEffect } from "react";
 import PageCanvas from "@/components/PageCanvas";
 import ProjectCard from "@/components/ProjectCard";
 import ContactButton from "@/components/ContactButton";
 import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
 import { faLinkedin, faGithub } from "@fortawesome/free-brands-svg-icons";
 
-// DEBUG: Remove this function later
-function useViewportDebug() {
-	useEffect(() => {
-		const log = () => {
-			const w = window.innerWidth;
-			const bp = w < 640 ? "xs" : w < 768 ? "sm" : w < 1024 ? "md" : w < 1280 ? "lg" : "xl";
-			console.log(`Viewport: ${w}px (${bp})`);
-		};
-		log();
-		window.addEventListener("resize", log);
-		return () => window.removeEventListener("resize", log);
-	}, []);
-}
-
 export default function Home() {
-	useViewportDebug(); // DEBUG: Remove this line later
 	return (
 		<PageCanvas>
 			{/* Responsive Header/Sidebar */}
@@ -54,8 +36,8 @@ export default function Home() {
 				<section className="mb-12 animate-fade-in-scale delay-200">
 					<h2 className="font-heading text-3xl text-stone-gray-light font-bold pb-1">About Me</h2>
 					<div className="content-hr p-6 pt-4 animate-fade-in-scale delay-200">
-						<p className="font-display text-stone-gray leading-relaxed mb-4">I'm a Computer Science Specialist student at the University of Toronto - St. George campus with a focus on computer systems. Previously working as a CloudOps Analyst Intern at MPAC.</p>
-						<p className="font-display text-stone-gray leading-relaxed">When I'm not coding with the latest technologies, you can find me producing electronic music, DJing, and checking out new spots in Toronto.</p>
+						<p className="font-display text-stone-gray leading-relaxed mb-4">{"I'm a Computer Science Specialist student at the University of Toronto - St. George campus with a focus on computer systems. Previously working as a CloudOps Analyst Intern at MPAC."}</p>
+						<p className="font-display text-stone-gray leading-relaxed">{"When I'm not coding with the latest technologies, you can find me producing electronic music, DJing, and checking out new spots in Toronto."}</p>
 					</div>
 				</section>
 
@@ -74,7 +56,7 @@ export default function Home() {
 				<section className="animate-fade-in-scale delay-600">
 					<h2 className="font-heading text-3xl text-stone-gray-light font-bold pb-1">Get In Touch</h2>
 					<div className="content-hr p-6 pt-4 animate-fade-in-scale delay-600">
-						<p className="font-display text-stone-gray leading-relaxed mb-6">I'm always interested in new opportunities and contributing to interesting projects. Feel free to reach out!</p>
+						<p className="font-display text-stone-gray leading-relaxed mb-6">{"I'm always interested in new opportunities and contributing to interesting projects. Feel free to reach out!"}</p>
 						<div className="flex gap-4">
 							<ContactButton icon={faEnvelope} href="mailto:david.daniliuc@mail.utoronto.ca" />
 							<ContactButton icon={faLinkedin} text="" href="https://www.linkedin.com/in/david-daniliuc/" />
