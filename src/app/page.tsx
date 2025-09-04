@@ -1,85 +1,84 @@
+"use client";
+
+import { useEffect } from "react";
 import PageCanvas from "@/components/PageCanvas";
+import ProjectCard from "@/components/ProjectCard";
+import ContactButton from "@/components/ContactButton";
+import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
+import { faLinkedin, faGithub } from "@fortawesome/free-brands-svg-icons";
+
+// DEBUG: Remove this function later
+function useViewportDebug() {
+	useEffect(() => {
+		const log = () => {
+			const w = window.innerWidth;
+			const bp = w < 640 ? "xs" : w < 768 ? "sm" : w < 1024 ? "md" : w < 1280 ? "lg" : "xl";
+			console.log(`Viewport: ${w}px (${bp})`);
+		};
+		log();
+		window.addEventListener("resize", log);
+		return () => window.removeEventListener("resize", log);
+	}, []);
+}
 
 export default function Home() {
+	useViewportDebug(); // DEBUG: Remove this line later
 	return (
 		<PageCanvas>
-			{/* Fixed Left Sidebar */}
-			<aside className="fixed bottom-0 p-8 mb-8">
-				<div className="animate-fade-in-up">
+			{/* Responsive Header/Sidebar */}
+			<div className="lg:fixed lg:bottom-0 lg:p-8 lg:mb-8 p-8 pb-0 lg:pb-8">
+				<div className="animate-fade-in-scale">
 					<div className="mb-4">
-						<h1 className="font-heading text-4xl text-stone-gray-light font-bold">david daniliuc</h1>
+						<h1 className="font-heading text-5xl text-stone-gray-light font-bold">david daniliuc</h1>
 					</div>
-					<ul className="space-y-3">
+					<ul className="space-y-3 hidden lg:block">
 						<li className="flex items-center gap-3 animate-fade-in-left delay-300">
-							<svg className="w-4 h-4 text-stone-gray flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+							<svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
 								<path d="M12 2 C12 6 16 12 22 12 C16 12 12 18 12 22 C12 18 8 12 2 12 C8 12 12 6 12 2 Z" />
 							</svg>
-							<p className="font-display text-lg text-stone-gray leading-relaxed font-light">cloudops engineer @ MPAC</p>
+							<p className="font-sans text-stone-gray text-lg leading-relaxed font-light">cloudops engineer @ MPAC</p>
 						</li>
 						<li className="flex items-center gap-3 animate-fade-in-left delay-500">
 							<svg className="w-4 h-4 text-stone-gray flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
 								<path d="M12 2 C12 6 16 12 22 12 C16 12 12 18 12 22 C12 18 8 12 2 12 C8 12 12 6 12 2 Z" />
 							</svg>
-							<p className="font-display text-lg text-stone-gray leading-relaxed font-light">computer science @ UofT - St. George</p>
+							<p className="font-sans text-stone-gray text-lg leading-relaxed font-light">computer science @ UofT</p>
 						</li>
 					</ul>
 				</div>
-			</aside>
+			</div>
 
 			{/* Main Content Area */}
-			<main className="flex-1 ml-96 p-8">
-				{/* Projects Section */}
-				<section className="mb-16 animate-fade-in-up delay-200">
-					<h2 className="font-heading text-3xl text-stone-gray-light font-bold mb-8">Projects</h2>
-					<div className="space-y-8">
-						<div className="border border-stone-gray-light rounded-lg p-6 animate-fade-in-left delay-400">
-							<h3 className="font-display text-xl text-stone-gray font-semibold mb-3">Portfolio Website</h3>
-							<p className="font-display text-stone-gray leading-relaxed mb-4">A modern portfolio built with Next.js, Three.js, and custom GLSL shaders. Features dynamic background animations and responsive design.</p>
-							<div className="flex flex-wrap gap-2">
-								<span className="px-3 py-1 bg-moss-green text-white text-sm rounded-full">Next.js</span>
-								<span className="px-3 py-1 bg-moss-green text-white text-sm rounded-full">Three.js</span>
-								<span className="px-3 py-1 bg-moss-green text-white text-sm rounded-full">GLSL</span>
-								<span className="px-3 py-1 bg-moss-green text-white text-sm rounded-full">TypeScript</span>
-							</div>
-						</div>
-
-						<div className="border border-stone-gray-light rounded-lg p-6 animate-fade-in-left delay-600">
-							<h3 className="font-display text-xl text-stone-gray font-semibold mb-3">CloudOps Infrastructure</h3>
-							<p className="font-display text-stone-gray leading-relaxed mb-4">Designed and implemented scalable cloud infrastructure solutions for municipal property assessment systems.</p>
-							<div className="flex flex-wrap gap-2">
-								<span className="px-3 py-1 bg-moss-green text-white text-sm rounded-full">AWS</span>
-								<span className="px-3 py-1 bg-moss-green text-white text-sm rounded-full">Docker</span>
-								<span className="px-3 py-1 bg-moss-green text-white text-sm rounded-full">Kubernetes</span>
-							</div>
-						</div>
+			<main className="flex-1 lg:ml-94 p-8 pt-2 lg:pt-10">
+				{/* About Section */}
+				<section className="mb-12 animate-fade-in-scale delay-200">
+					<h2 className="font-heading text-3xl text-stone-gray-light font-bold pb-1">About Me</h2>
+					<div className="content-hr p-6 pt-4 animate-fade-in-scale delay-200">
+						<p className="font-display text-stone-gray leading-relaxed mb-4">I'm a Computer Science Specialist student at the University of Toronto - St. George campus with a focus on computer systems. Previously working as a CloudOps Analyst Intern at MPAC.</p>
+						<p className="font-display text-stone-gray leading-relaxed">When I'm not coding with the latest technologies, you can find me producing electronic music, DJing, and checking out new spots in Toronto.</p>
 					</div>
 				</section>
 
-				{/* About Section */}
-				<section className="mb-16 animate-fade-in-up delay-800">
-					<h2 className="font-heading text-3xl text-stone-gray-light font-bold mb-8">About Me</h2>
-					<div className="border border-stone-gray-light rounded-lg p-6">
-						<p className="font-display text-stone-gray leading-relaxed mb-4">I'm a Computer Science student at the University of Toronto with a passion for cloud infrastructure and modern web technologies. Currently working as a CloudOps Engineer at MPAC, where I help build and maintain scalable systems for property assessment.</p>
-						<p className="font-display text-stone-gray leading-relaxed mb-4">When I'm not coding, you can find me exploring new technologies, contributing to open source projects, or experimenting with creative coding and shaders.</p>
-						<p className="font-display text-stone-gray leading-relaxed">I enjoy working at the intersection of performance, design, and user experience to create meaningful digital experiences.</p>
+				{/* Projects Section */}
+				<section className="mb-12 animate-fade-in-scale delay-400">
+					<h2 className="font-heading text-3xl text-stone-gray-light font-bold pb-1">Projects</h2>
+					<div className="content-hr p-6 pt-4">
+						<div className="space-y-8">
+							<ProjectCard className="animate-fade-in-scale delay-400" title="StudyUp" description="StudyUp is an AI-powered learning companion that centralizes course materials into a personalized tutor to help students study smarter and manage their academic journey. Won Lovable x Roam International Hackathon, 15K+ CAD Prize, Flown to San Francisco Demo Day" technologies={["Next.js", "TypeScript", "Supabase", "Postgres", "Tailwind CSS", "Google Gemini"]} />
+							<ProjectCard className="animate-fade-in-scale delay-400" title="Indus" description="Indus is an intelligent financial analysis platform with a responsive dashboard that delivers real-time market data, dynamic TradingView trend visualizations, and AI-driven contextual insights for both stock and crypto." technologies={["Next.js", "TypeScript", "WebSocket", "Alpaca", "Yahoo Finance", "TradingView", "Google Gemini", "Tailwind CSS"]} />
+						</div>
 					</div>
 				</section>
 
 				{/* Contact Section */}
-				<section className="animate-fade-in-up delay-1000">
-					<h2 className="font-heading text-3xl text-stone-gray-light font-bold mb-8">Get In Touch</h2>
-					<div className="border border-stone-gray-light rounded-lg p-6">
-						<p className="font-display text-stone-gray leading-relaxed mb-6">I'm always interested in new opportunities and interesting projects. Feel free to reach out!</p>
+				<section className="animate-fade-in-scale delay-600">
+					<h2 className="font-heading text-3xl text-stone-gray-light font-bold pb-1">Get In Touch</h2>
+					<div className="content-hr p-6 pt-4 animate-fade-in-scale delay-600">
+						<p className="font-display text-stone-gray leading-relaxed mb-6">I'm always interested in new opportunities and contributing to interesting projects. Feel free to reach out!</p>
 						<div className="flex gap-4">
-							<a href="mailto:your.email@example.com" className="px-6 py-3 bg-moss-green text-white rounded-lg font-display hover:bg-moss-green-light transition-colors">
-								Email Me
-							</a>
-							<a href="#" className="px-6 py-3 border border-stone-gray text-stone-gray rounded-lg font-display hover:bg-stone-gray-light hover:text-white transition-colors">
-								LinkedIn
-							</a>
-							<a href="#" className="px-6 py-3 border border-stone-gray text-stone-gray rounded-lg font-display hover:bg-stone-gray-light hover:text-white transition-colors">
-								GitHub
-							</a>
+							<ContactButton icon={faEnvelope} href="mailto:david.daniliuc@mail.utoronto.ca" />
+							<ContactButton icon={faLinkedin} text="" href="https://www.linkedin.com/in/david-daniliuc/" />
+							<ContactButton icon={faGithub} text="" href="https://github.com/vicdenz/" />
 						</div>
 					</div>
 				</section>

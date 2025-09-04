@@ -128,41 +128,6 @@ button,
 	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Link styles */
-a {
-	color: var(--clay-red);
-	text-decoration: none;
-	position: relative;
-}
-
-a:hover {
-	color: var(--deep-charcoal);
-}
-
-a:hover::after {
-	content: "";
-	position: absolute;
-	bottom: -2px;
-	left: 0;
-	width: 100%;
-	height: 1px;
-	background: var(--clay-red);
-	transform: scaleX(1);
-	transition: transform 0.3s ease;
-}
-
-a::after {
-	content: "";
-	position: absolute;
-	bottom: -2px;
-	left: 0;
-	width: 100%;
-	height: 1px;
-	background: var(--clay-red);
-	transform: scaleX(0);
-	transition: transform 0.3s ease;
-}
-
 /* Fade-in animation for content */
 @keyframes fadeInUp {
 	from {
@@ -171,7 +136,18 @@ a::after {
 	}
 	to {
 		opacity: 1;
-		transform: translateY(0);
+		transform: translateY(0px);
+	}
+}
+
+@keyframes fadeInScale {
+	from {
+		opacity: 0;
+		transform: scale(0.95);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
 	}
 }
 
@@ -227,6 +203,12 @@ a::after {
 	animation: fadeIn 1s ease-out forwards;
 }
 
+.animate-fade-in-scale {
+	opacity: 0;
+	transform: scale(0.95);
+	animation: fadeInScale 1s ease-out forwards;
+}
+
 .animate-gentle-float {
 	animation: gentleFloat 6s ease-in-out infinite;
 }
@@ -274,51 +256,6 @@ a::after {
 	transform: translateY(0);
 }
 
-/* Button hover effects */
-button:hover {
-	transform: translateY(-2px);
-}
-
-button:active {
-	transform: translateY(0);
-}
-
-/* Parallax scroll effect for decorative elements */
-.parallax-slow {
-	will-change: transform;
-}
-
-/* Responsive typography scale */
-@media (max-width: 768px) {
-	h1 {
-		font-size: clamp(2.5rem, 8vw, 4rem);
-	}
-
-	h2 {
-		font-size: clamp(2rem, 6vw, 3rem);
-	}
-
-	h3 {
-		font-size: clamp(1.5rem, 5vw, 2rem);
-	}
-}
-
-/* Improved focus management for accessibility */
-.skip-link {
-	position: absolute;
-	top: -40px;
-	left: 6px;
-	background: var(--moss-green);
-	color: var(--washed-white);
-	padding: 8px;
-	text-decoration: none;
-	transition: top 0.3s;
-}
-
-.skip-link:focus {
-	top: 6px;
-}
-
 /* Reduce motion for accessibility */
 @media (prefers-reduced-motion: reduce) {
 	.animate-gentle-float,
@@ -359,7 +296,6 @@ button:active {
 	background: linear-gradient(180deg, rgba(255, 255, 255, 0.8), transparent, rgba(255, 255, 255, 0.3));
 }
 
-/* Very large and gradual outward white shadow */
-.body-shadow {
-	box-shadow: 0 0 80px 100px var(--washed-white);
+.content-hr {
+	border-top: 2px solid var(--stone-gray-light);
 }

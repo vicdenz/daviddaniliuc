@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Funnel_Sans, Funnel_Display } from "next/font/google";
 import "./globals.css";
+import "../lib/fontawesome";
 
 const funnelSans = Funnel_Sans({
 	variable: "--font-funnel-sans",
