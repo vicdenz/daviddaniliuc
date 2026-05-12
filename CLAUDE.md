@@ -29,6 +29,11 @@ Personal portfolio website built with Next.js 15, React 19, TypeScript, and Tail
 - `npm run build` — Production build
 - `npm run lint` — ESLint
 
+## Git & Commit Guidelines
+- Prioritize small, incremental commits over large ones
+- Every commit message should be 1 short sentence
+- Never mention AI, Claude, or any AI tool in commit messages, co-author tags, or PRs
+
 ## Design Notes
 - Dark background with light text (deep charcoal bg, stone-gray/light text)
 - Earthy color palette: moss green accents, stone grays, rice paper tones
