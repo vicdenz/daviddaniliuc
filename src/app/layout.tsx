@@ -17,7 +17,7 @@ const funnelDisplay = Funnel_Display({
 
 export const metadata: Metadata = {
 	title: "David Daniliuc",
-	description: "David Daniliuc, software engineer and cs student @ UofT.",
+	description: "David Daniliuc, infrastructure engineering intern @ Shopify and cs & math student @ UofT.",
 };
 
 export default function RootLayout({
