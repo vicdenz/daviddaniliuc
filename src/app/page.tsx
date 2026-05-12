@@ -46,8 +46,8 @@ export default function Home() {
 					<h2 className="font-heading text-3xl text-stone-gray-light font-bold pb-1">Projects</h2>
 					<div className="content-hr p-6 pt-4">
 						<div className="space-y-8">
-							<ProjectCard className="animate-fade-in-scale delay-400" title="StudyUp" description="StudyUp is an AI academic planner delivering centralized course materials and calendars, real-time tutoring and study planners with analytics, progress tracking, and smart notifications. Won $10K USD 1st place at the Lovable x Roam International Hackathon hosted by UTMIST and The AI Collective." technologies={["React", "Vite", "TypeScript", "Supabase", "Tailwind CSS", "Vercel"]} />
-							<ProjectCard className="animate-fade-in-scale delay-400" title="Indus" description="Indus is an intelligent financial analysis platform with AI-powered insights for real-time market data, integrating TradingView trend charts with qualitative analysis through a contextual AI interface overlay." technologies={["React", "Next.js", "TypeScript", "socket.io", "Google Gemini", "Vercel"]} />
+							<ProjectCard className="animate-fade-in-scale delay-400" title="StudyUp" href="https://study-up.lovable.app/" description="StudyUp is an AI academic planner delivering centralized course materials and calendars, real-time tutoring and study planners with analytics, progress tracking, and smart notifications. Won $10K USD 1st place at the Lovable x Roam International Hackathon hosted by UTMIST and The AI Collective." technologies={["React", "Vite", "TypeScript", "Supabase", "Tailwind CSS", "Vercel"]} />
+							<ProjectCard className="animate-fade-in-scale delay-400" title="Indus" href="https://indus-trade.vercel.app/" description="Indus is an intelligent financial analysis platform with AI-powered insights for real-time market data, integrating TradingView trend charts with qualitative analysis through a contextual AI interface overlay." technologies={["React", "Next.js", "TypeScript", "socket.io", "Google Gemini", "Vercel"]} />
 						</div>
 					</div>
 				</section>
