@@ -63,17 +63,6 @@ export default function Home() {
 					</div>
 				</section>
 
-				<section className="field-note" aria-labelledby="note-title">
-					<div className="note-meta">
-						<p className="section-mark">A working principle</p>
-						<span>Infrastructure</span>
-					</div>
-					<article>
-						<h2 id="note-title">Good infrastructure reduces the amount of context an engineer has to carry.</h2>
-						<p>I&apos;m drawn to CI, developer experience, reliability, and observability because they turn complicated machinery into clear feedback and dependable paths.</p>
-					</article>
-				</section>
-
 				<section className="experience-index" aria-labelledby="experience-title">
 					<div className="index-heading">
 						<h2 className="section-mark" id="experience-title">Experience</h2>
