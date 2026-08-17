@@ -29,11 +29,11 @@ void main() {
   float packet = line(uv.x - packetX, 0.007) * routeH;
   float nodes = line(length(fract(scaled * 8.0) - 0.5), 0.055) * step(0.72, hash21(floor(scaled * 8.0)));
 
-  vec3 paper = vec3(0.91, 0.90, 0.86);
-  vec3 graphite = vec3(0.10, 0.16, 0.15);
-  vec3 cobalt = vec3(0.09, 0.25, 0.72);
+  vec3 paper = vec3(0.957, 0.941, 0.902);
+  vec3 graphite = vec3(0.094, 0.157, 0.231);
+  vec3 cobalt = vec3(0.141, 0.341, 0.839);
   vec3 color = paper;
-  color = mix(color, graphite, majorGrid * 0.12 + minorGrid * 0.035);
-  color = mix(color, cobalt, (routeH + routeV) * 0.07 + nodes * 0.24 + packet * 0.75);
+  color = mix(color, graphite, majorGrid * 0.10 + minorGrid * 0.025);
+  color = mix(color, cobalt, (routeH + routeV) * 0.06 + nodes * 0.20 + packet * 0.72);
   gl_FragColor = vec4(color, 1.0);
 }
