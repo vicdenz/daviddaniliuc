@@ -3,72 +3,57 @@ import PageCanvas from "@/components/PageCanvas";
 export default function Home() {
 	return (
 		<PageCanvas>
-			<div className="blueprint-shell" id="top">
-				<header className="plan-header">
-					<a className="nameplate" href="#top">David Daniliuc</a>
-					<p>Infrastructure engineer<br />Toronto, Canada</p>
-					<nav aria-label="Primary navigation">
-						<a href="#practice">Practice</a>
-						<a href="#work">Work</a>
-						<a href="mailto:david.daniliuc24@gmail.com">Contact</a>
-					</nav>
-				</header>
+			<main className="newspaper">
+				<section className="intro" aria-labelledby="intro-title">
+					<h1 id="intro-title">I&apos;m David, an infrastructure engineer based in Toronto.</h1>
+					<p>
+						I&apos;m currently working on continuous integration infrastructure at Shopify while studying computer science and mathematics at the University of Toronto.
+					</p>
+					<p>
+						I like building reliable systems, improving developer experience, and making complicated machinery easier to use.
+					</p>
+				</section>
 
-				<main>
-					<section className="plan-hero" aria-labelledby="hero-title">
-						<div className="drawing-key" aria-hidden="true">
-							<span>DD–01</span>
-							<span>2026</span>
-						</div>
-						<div className="hero-statement">
-							<p className="kicker">Software, underneath</p>
-							<h1 id="hero-title">I design systems for building, shipping, and understanding software.</h1>
-							<p className="summary">I&apos;m David, a computer science and mathematics student at the University of Toronto, currently working on continuous integration infrastructure at Shopify.</p>
-						</div>
-					</section>
+				<section aria-labelledby="highlights-title">
+					<h2 id="highlights-title">Recent highlights</h2>
+					<div className="story-list">
+						<p>
+							Built <a href="https://study-up.lovable.app/" target="_blank" rel="noreferrer">StudyUp ↗</a>, an AI academic planner that won first place at the Lovable × Roam international hackathon.
+						</p>
+						<p>
+							Built <a href="https://indus-trade.vercel.app/" target="_blank" rel="noreferrer">Indus ↗</a>, a financial analysis platform combining realtime market data, interactive charts, and contextual AI.
+						</p>
+					</div>
+				</section>
 
-					<section className="plan-section" id="practice" aria-labelledby="practice-title">
-						<div className="section-code">A / Practice</div>
-						<h2 id="practice-title">The invisible layer should feel dependable.</h2>
-						<div className="practice-notes">
-							<p>I like infrastructure that gives engineers clear feedback, sensible defaults, and fewer reasons to think about infrastructure.</p>
-							<ul>
-								<li>Continuous integration</li>
-								<li>Developer experience</li>
-								<li>Reliability and observability</li>
-								<li>Systems interfaces</li>
-							</ul>
+				<section aria-labelledby="experience-title">
+					<h2 id="experience-title">Experience &amp; education</h2>
+					<div className="index-list">
+						<div className="index-row">
+							<div><strong>Shopify</strong><span>Infrastructure Engineering</span></div>
+							<p>Continuous integration</p>
 						</div>
-					</section>
-
-					<section className="plan-section work-plan" id="work" aria-labelledby="work-title">
-						<div className="section-code">B / Selected work</div>
-						<h2 id="work-title">Things I&apos;ve shipped.</h2>
-						<div className="project-list">
-							<a href="https://study-up.lovable.app/" target="_blank" rel="noreferrer">
-								<span className="project-number">01</span>
-								<div><strong>StudyUp</strong><p>An AI academic planner built in under eight hours and awarded first place at the Lovable × Roam hackathon.</p></div>
-								<span className="project-link">View ↗</span>
-							</a>
-							<a href="https://indus-trade.vercel.app/" target="_blank" rel="noreferrer">
-								<span className="project-number">02</span>
-								<div><strong>Indus</strong><p>A financial analysis platform combining realtime market data, interactive charts, and contextual AI.</p></div>
-								<span className="project-link">View ↗</span>
-							</a>
+						<div className="index-row">
+							<div><strong>University of Toronto</strong><span>Computer Science + Mathematics</span></div>
+							<p>St. George</p>
 						</div>
-					</section>
+					</div>
+				</section>
 
-					<section className="personal-strip">
-						<div className="section-code">C / After hours</div>
-						<p>Electronic music, DJing, and finding new corners of Toronto.</p>
-					</section>
-				</main>
+				<section aria-labelledby="outside-title">
+					<h2 id="outside-title">Outside software</h2>
+					<p className="single-story">I produce electronic music, DJ, and look for new places around Toronto.</p>
+				</section>
 
 				<footer>
-					<a href="mailto:david.daniliuc24@gmail.com">david.daniliuc24@gmail.com</a>
-					<div><a href="https://github.com/vicdenz/" target="_blank" rel="noreferrer">GitHub</a><a href="https://www.linkedin.com/in/david-daniliuc/" target="_blank" rel="noreferrer">LinkedIn</a></div>
+					<div className="links">
+						<a href="mailto:david.daniliuc24@gmail.com">Email</a>
+						<a href="https://github.com/vicdenz/" target="_blank" rel="noreferrer">GitHub</a>
+						<a href="https://www.linkedin.com/in/david-daniliuc/" target="_blank" rel="noreferrer">LinkedIn</a>
+					</div>
+					<span>David Daniliuc</span>
 				</footer>
-			</div>
+			</main>
 		</PageCanvas>
 	);
 }
