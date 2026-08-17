@@ -27,8 +27,12 @@ export default function InfrastructureBackdrop() {
 	useEffect(() => {
 		const canvas = canvasRef.current;
 		if (!canvas) return;
-		const context = canvas.getContext("2d");
-		if (!context) return;
+		const outputContext = canvas.getContext("2d");
+		const sceneCanvas = document.createElement("canvas");
+		const context = sceneCanvas.getContext("2d");
+		const pixelCanvas = document.createElement("canvas");
+		const pixelContext = pixelCanvas.getContext("2d");
+		if (!outputContext || !context || !pixelContext) return;
 
 		let width = window.innerWidth;
 		let height = window.innerHeight;
@@ -75,6 +79,11 @@ export default function InfrastructureBackdrop() {
 			canvas.height = Math.round(height * pixelRatio);
 			canvas.style.width = `${width}px`;
 			canvas.style.height = `${height}px`;
+			sceneCanvas.width = canvas.width;
+			sceneCanvas.height = canvas.height;
+			pixelCanvas.width = Math.max(1, Math.round(canvas.width / 2.4));
+			pixelCanvas.height = Math.max(1, Math.round(canvas.height / 2.4));
+			outputContext.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
 			context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
 			buildRoutes();
 		};
@@ -114,8 +123,8 @@ export default function InfrastructureBackdrop() {
 				context.stroke();
 			}
 
-			context.strokeStyle = "rgba(36,87,214,.15)";
-			context.lineWidth = 1;
+			context.strokeStyle = "rgba(36,87,214,.17)";
+			context.lineWidth = 1.35;
 			for (let row = -1; row < Math.ceil(height / (spacing * 4)) + 1; row += 1) {
 				for (let column = -1; column < Math.ceil(width / (spacing * 4)) + 1; column += 1) {
 					if ((column * 7 + row * 11) % 5 !== 0) continue;
@@ -160,6 +169,7 @@ export default function InfrastructureBackdrop() {
 			for (let x = spacing * 2; x < width; x += spacing * 4) {
 				for (let y = spacing * 2; y < height; y += spacing * 4) {
 					const pulse = reduceMotion ? 0.45 : 0.35 + Math.sin(time * 1.4 + x * 0.01 + y * 0.02) * 0.18;
+					context.lineWidth = 1.15;
 					context.strokeStyle = `rgba(36,87,214,${pulse})`;
 					context.beginPath();
 					context.arc(x + parallaxX, y + parallaxY, 5, 0, Math.PI * 2);
@@ -176,6 +186,23 @@ export default function InfrastructureBackdrop() {
 				context.fillRect(0, 0, width, height);
 				context.globalAlpha = 1;
 			}
+
+			outputContext.clearRect(0, 0, width, height);
+			outputContext.save();
+			outputContext.filter = "blur(0.55px)";
+			outputContext.drawImage(sceneCanvas, 0, 0, sceneCanvas.width, sceneCanvas.height, 0, 0, width, height);
+			outputContext.restore();
+
+			pixelContext.setTransform(1, 0, 0, 1, 0, 0);
+			pixelContext.clearRect(0, 0, pixelCanvas.width, pixelCanvas.height);
+			pixelContext.imageSmoothingEnabled = true;
+			pixelContext.drawImage(sceneCanvas, 0, 0, pixelCanvas.width, pixelCanvas.height);
+
+			outputContext.save();
+			outputContext.globalAlpha = 0.16;
+			outputContext.imageSmoothingEnabled = false;
+			outputContext.drawImage(pixelCanvas, 0, 0, pixelCanvas.width, pixelCanvas.height, 0, 0, width, height);
+			outputContext.restore();
 
 			if (!reduceMotion) animationFrame = window.requestAnimationFrame(draw);
 		};
