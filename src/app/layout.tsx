@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
-import { Funnel_Sans, Funnel_Display } from "next/font/google";
+import { DM_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
-import "../lib/fontawesome";
 
-const funnelSans = Funnel_Sans({
-	variable: "--font-funnel-sans",
+const dmSans = DM_Sans({
+	variable: "--font-dm-sans",
 	subsets: ["latin"],
-	weight: ["300", "400", "500", "600", "700", "800"],
+	display: "swap",
 });
 
-const funnelDisplay = Funnel_Display({
-	variable: "--font-funnel-display",
+const ibmPlexMono = IBM_Plex_Mono({
+	variable: "--font-ibm-plex-mono",
 	subsets: ["latin"],
-	weight: ["300", "400", "500", "600", "700", "800"],
+	weight: ["400", "500"],
+	display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -27,7 +27,7 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<body className={`${funnelSans.variable} ${funnelDisplay.variable} antialiased`}>{children}</body>
+			<body className={`${dmSans.variable} ${ibmPlexMono.variable} antialiased`}>{children}</body>
 		</html>
 	);
 }
