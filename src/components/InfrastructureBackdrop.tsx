@@ -39,8 +39,6 @@ export default function InfrastructureBackdrop() {
 		let pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
 		let animationFrame = 0;
 		let routes: Route[] = [];
-		const pointer = { x: 0.5, y: 0.5 };
-		const easedPointer = { x: 0.5, y: 0.5 };
 		const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 		const noiseCanvas = document.createElement("canvas");
@@ -81,31 +79,24 @@ export default function InfrastructureBackdrop() {
 			canvas.style.height = `${height}px`;
 			sceneCanvas.width = canvas.width;
 			sceneCanvas.height = canvas.height;
-			pixelCanvas.width = Math.max(1, Math.round(canvas.width / 2.4));
-			pixelCanvas.height = Math.max(1, Math.round(canvas.height / 2.4));
+			pixelCanvas.width = Math.max(1, Math.round(width / 4));
+			pixelCanvas.height = Math.max(1, Math.round(height / 4));
 			outputContext.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
 			context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
 			buildRoutes();
 		};
 
-		const updatePointer = (event: PointerEvent) => {
-			pointer.x = event.clientX / width;
-			pointer.y = event.clientY / height;
-		};
-
 		const draw = (timestamp: number) => {
 			const time = timestamp / 1000;
-			easedPointer.x += (pointer.x - easedPointer.x) * 0.025;
-			easedPointer.y += (pointer.y - easedPointer.y) * 0.025;
-			const parallaxX = (easedPointer.x - 0.5) * 18;
-			const parallaxY = (easedPointer.y - 0.5) * 18;
+			const parallaxX = 0;
+			const parallaxY = 0;
 			const spacing = width < 620 ? 34 : 44;
 
 			context.clearRect(0, 0, width, height);
 			context.fillStyle = "#f4f0e6";
 			context.fillRect(0, 0, width, height);
 
-			context.lineWidth = 1;
+			context.lineWidth = 1.15;
 			for (let x = -spacing * 2; x < width + spacing * 2; x += spacing) {
 				const column = Math.round((x + spacing * 2) / spacing);
 				context.strokeStyle = column % 4 === 0 ? "rgba(24,40,59,.20)" : "rgba(24,40,59,.075)";
@@ -123,8 +114,8 @@ export default function InfrastructureBackdrop() {
 				context.stroke();
 			}
 
-			context.strokeStyle = "rgba(36,87,214,.17)";
-			context.lineWidth = 1.35;
+			context.strokeStyle = "rgba(36,87,214,.24)";
+			context.lineWidth = 1.65;
 			for (let row = -1; row < Math.ceil(height / (spacing * 4)) + 1; row += 1) {
 				for (let column = -1; column < Math.ceil(width / (spacing * 4)) + 1; column += 1) {
 					if ((column * 7 + row * 11) % 5 !== 0) continue;
@@ -189,7 +180,7 @@ export default function InfrastructureBackdrop() {
 
 			outputContext.clearRect(0, 0, width, height);
 			outputContext.save();
-			outputContext.filter = "blur(0.55px)";
+			outputContext.filter = "blur(1.15px)";
 			outputContext.drawImage(sceneCanvas, 0, 0, sceneCanvas.width, sceneCanvas.height, 0, 0, width, height);
 			outputContext.restore();
 
@@ -199,7 +190,7 @@ export default function InfrastructureBackdrop() {
 			pixelContext.drawImage(sceneCanvas, 0, 0, pixelCanvas.width, pixelCanvas.height);
 
 			outputContext.save();
-			outputContext.globalAlpha = 0.16;
+			outputContext.globalAlpha = 0.36;
 			outputContext.imageSmoothingEnabled = false;
 			outputContext.drawImage(pixelCanvas, 0, 0, pixelCanvas.width, pixelCanvas.height, 0, 0, width, height);
 			outputContext.restore();
@@ -209,13 +200,11 @@ export default function InfrastructureBackdrop() {
 
 		resize();
 		window.addEventListener("resize", resize);
-		window.addEventListener("pointermove", updatePointer, { passive: true });
 		draw(0);
 
 		return () => {
 			window.cancelAnimationFrame(animationFrame);
 			window.removeEventListener("resize", resize);
-			window.removeEventListener("pointermove", updatePointer);
 		};
 	}, []);
 
