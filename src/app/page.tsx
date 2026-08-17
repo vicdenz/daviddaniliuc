@@ -1,70 +1,74 @@
 import PageCanvas from "@/components/PageCanvas";
-import ProjectCard from "@/components/ProjectCard";
-import ContactButton from "@/components/ContactButton";
-import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
-import { faLinkedin, faGithub } from "@fortawesome/free-brands-svg-icons";
 
 export default function Home() {
 	return (
 		<PageCanvas>
-			{/* Responsive Header/Sidebar */}
-			<div className="lg:fixed lg:bottom-0 lg:p-8 lg:mb-8 p-8 pb-0 lg:pb-8">
-				<div className="animate-fade-in-scale">
-					<div className="mb-4">
-						<h1 className="font-heading text-5xl text-stone-gray-light font-bold">david daniliuc</h1>
-					</div>
-					<ul className="space-y-3 hidden lg:block">
-						<li className="flex items-center gap-3 animate-fade-in-left delay-300">
-							<svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-								<path d="M12 2 C12 6 16 12 22 12 C16 12 12 18 12 22 C12 18 8 12 2 12 C8 12 12 6 12 2 Z" />
-							</svg>
-							<p className="font-sans text-stone-gray text-lg leading-relaxed font-light">infra @ Shopify</p>
-						</li>
-						<li className="flex items-center gap-3 animate-fade-in-left delay-500">
-							<svg className="w-4 h-4 text-stone-gray flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-								<path d="M12 2 C12 6 16 12 22 12 C16 12 12 18 12 22 C12 18 8 12 2 12 C8 12 12 6 12 2 Z" />
-							</svg>
-							<p className="font-sans text-stone-gray text-lg leading-relaxed font-light">cs & math @ UofT</p>
-						</li>
-					</ul>
-				</div>
+			<div className="blueprint-shell" id="top">
+				<header className="plan-header">
+					<a className="nameplate" href="#top">David Daniliuc</a>
+					<p>Infrastructure engineer<br />Toronto, Canada</p>
+					<nav aria-label="Primary navigation">
+						<a href="#practice">Practice</a>
+						<a href="#work">Work</a>
+						<a href="mailto:david.daniliuc24@gmail.com">Contact</a>
+					</nav>
+				</header>
+
+				<main>
+					<section className="plan-hero" aria-labelledby="hero-title">
+						<div className="drawing-key" aria-hidden="true">
+							<span>DD–01</span>
+							<span>2026</span>
+						</div>
+						<div className="hero-statement">
+							<p className="kicker">Software, underneath</p>
+							<h1 id="hero-title">I design systems for building, shipping, and understanding software.</h1>
+							<p className="summary">I&apos;m David, a computer science and mathematics student at the University of Toronto, currently working on continuous integration infrastructure at Shopify.</p>
+						</div>
+					</section>
+
+					<section className="plan-section" id="practice" aria-labelledby="practice-title">
+						<div className="section-code">A / Practice</div>
+						<h2 id="practice-title">The invisible layer should feel dependable.</h2>
+						<div className="practice-notes">
+							<p>I like infrastructure that gives engineers clear feedback, sensible defaults, and fewer reasons to think about infrastructure.</p>
+							<ul>
+								<li>Continuous integration</li>
+								<li>Developer experience</li>
+								<li>Reliability and observability</li>
+								<li>Systems interfaces</li>
+							</ul>
+						</div>
+					</section>
+
+					<section className="plan-section work-plan" id="work" aria-labelledby="work-title">
+						<div className="section-code">B / Selected work</div>
+						<h2 id="work-title">Things I&apos;ve shipped.</h2>
+						<div className="project-list">
+							<a href="https://study-up.lovable.app/" target="_blank" rel="noreferrer">
+								<span className="project-number">01</span>
+								<div><strong>StudyUp</strong><p>An AI academic planner built in under eight hours and awarded first place at the Lovable × Roam hackathon.</p></div>
+								<span className="project-link">View ↗</span>
+							</a>
+							<a href="https://indus-trade.vercel.app/" target="_blank" rel="noreferrer">
+								<span className="project-number">02</span>
+								<div><strong>Indus</strong><p>A financial analysis platform combining realtime market data, interactive charts, and contextual AI.</p></div>
+								<span className="project-link">View ↗</span>
+							</a>
+						</div>
+					</section>
+
+					<section className="personal-strip">
+						<div className="section-code">C / After hours</div>
+						<p>Electronic music, DJing, and finding new corners of Toronto.</p>
+					</section>
+				</main>
+
+				<footer>
+					<a href="mailto:david.daniliuc24@gmail.com">david.daniliuc24@gmail.com</a>
+					<div><a href="https://github.com/vicdenz/" target="_blank" rel="noreferrer">GitHub</a><a href="https://www.linkedin.com/in/david-daniliuc/" target="_blank" rel="noreferrer">LinkedIn</a></div>
+				</footer>
 			</div>
-
-			{/* Main Content Area */}
-			<main className="flex-1 lg:ml-94 p-8 pt-2 lg:pt-10">
-				{/* About Section */}
-				<section className="mb-12 animate-fade-in-scale delay-200">
-					<h2 className="font-heading text-3xl text-stone-gray-light font-bold pb-1">About Me</h2>
-					<div className="content-hr p-6 pt-4 animate-fade-in-scale delay-200">
-						<p className="font-display text-stone-gray leading-relaxed mb-4">{"I'm a Computer Science Specialist and Mathematics Major at the University of Toronto - St. George, currently interning as an Infrastructure Engineer on the Continuous Integration team at Shopify."}</p>
-						<p className="font-display text-stone-gray leading-relaxed">{"When I'm not coding with the latest technologies, you can find me producing electronic music, DJing, and checking out new spots in Toronto."}</p>
-					</div>
-				</section>
-
-				{/* Projects Section */}
-				<section className="mb-12 animate-fade-in-scale delay-400">
-					<h2 className="font-heading text-3xl text-stone-gray-light font-bold pb-1">Projects</h2>
-					<div className="content-hr p-6 pt-4">
-						<div className="space-y-8">
-							<ProjectCard className="animate-fade-in-scale delay-400" title="StudyUp" href="https://study-up.lovable.app/" description="StudyUp is an AI academic planner delivering centralized course materials and calendars, real-time tutoring and study planners with analytics, progress tracking, and smart notifications. Won $10K USD 1st place at the Lovable x Roam International Hackathon hosted by UTMIST and The AI Collective." technologies={["React", "Vite", "TypeScript", "Supabase", "Tailwind CSS", "Vercel"]} />
-							<ProjectCard className="animate-fade-in-scale delay-400" title="Indus" href="https://indus-trade.vercel.app/" description="Indus is an intelligent financial analysis platform with AI-powered insights for real-time market data, integrating TradingView trend charts with qualitative analysis through a contextual AI interface overlay." technologies={["React", "Next.js", "TypeScript", "socket.io", "Google Gemini", "Vercel"]} />
-						</div>
-					</div>
-				</section>
-
-				{/* Contact Section */}
-				<section className="animate-fade-in-scale delay-600">
-					<h2 className="font-heading text-3xl text-stone-gray-light font-bold pb-1">Get In Touch</h2>
-					<div className="content-hr p-6 pt-4 animate-fade-in-scale delay-600">
-						<p className="font-display text-stone-gray leading-relaxed mb-6">{"I'm always interested in new opportunities and contributing to interesting projects. Feel free to reach out!"}</p>
-						<div className="flex gap-4">
-							<ContactButton icon={faEnvelope} href="mailto:david.daniliuc24@gmail.com" />
-							<ContactButton icon={faLinkedin} text="" href="https://www.linkedin.com/in/david-daniliuc/" />
-							<ContactButton icon={faGithub} text="" href="https://github.com/vicdenz/" />
-						</div>
-					</div>
-				</section>
-			</main>
 		</PageCanvas>
 	);
 }

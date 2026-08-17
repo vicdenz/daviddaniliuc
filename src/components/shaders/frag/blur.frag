@@ -1,39 +1,39 @@
-// "Blur" Fragment shader
-
-#pragma glslify: noise = require('glsl-noise/simplex/3d')
-
 uniform float uTime;
 uniform float uAspect;
 uniform vec3 uWashedWhiteColor;
-uniform vec3 uRicePaperColor;
-uniform vec3 uMossGreenColor;
-
-uniform vec3 uTeaStainColor;
 uniform vec3 uDeepCharcoalColor;
-
+uniform vec3 uMossGreenColor;
 varying vec2 vUv;
 
+float hash21(vec2 p) {
+  p = fract(p * vec2(234.34, 435.17));
+  p += dot(p, p + 34.23);
+  return fract(p.x * p.y);
+}
+
+float line(float p, float width) { return smoothstep(width, 0.0, abs(p)); }
+
 void main() {
-  // Normalized noise values with different uv scales
-  float noiseA = noise(vec3(vUv * 2., uTime * 0.25)) * 0.4 + 0.6;
-  float noiseB = noise(vec3(vUv * 4., uTime * 0.15)) * 0.6 + 0.4;
+  vec2 uv = vUv;
+  vec2 scaled = vec2(uv.x * max(uAspect, 1.0), uv.y);
+  vec2 majorCell = fract(scaled * 8.0);
+  float majorGrid = max(line(majorCell.x, 0.011), line(majorCell.y, 0.011));
+  vec2 minorCell = fract(scaled * 40.0);
+  float minorGrid = max(line(minorCell.x, 0.018), line(minorCell.y, 0.018));
 
-  // mix 3 colors based on noise values
-  vec4 color = mix(vec4(0.0), vec4(uMossGreenColor, 1.0), noiseA);
+  float routeY = 0.33 + floor(uv.x * 5.0) * 0.073;
+  float routeH = line(uv.y - routeY, 0.0025);
+  float routeX = 0.18 + floor(uv.y * 4.0) * 0.17;
+  float routeV = line(uv.x - routeX, 0.0025);
+  float packetX = fract(uTime * 0.055 + uv.y * 0.41);
+  float packet = line(uv.x - packetX, 0.007) * routeH;
+  float nodes = line(length(fract(scaled * 8.0) - 0.5), 0.055) * step(0.72, hash21(floor(scaled * 8.0)));
 
-  // high frequency noise for a grainy effect
-  float noiseV = noise(vec3(vUv * 800.0, uTime)) * 0.8 + 0.2;
-  vec4 noiseColor = mix(color, vec4(uRicePaperColor, 1.0), noiseV);
-  color = mix(color, noiseColor, 0.2);
-
-  // vignette
-//   vec2 uv = vUv * 2.0 - 1.0;
-//   uv.x *= uAspect;
-//   float vignette = distance(uv, vec2(0.0));
-//   float vig = smoothstep(min(0.55, max(0.35, noiseB)), max(0.6, noiseB), vignette);
-//   color = mix(uWashedWhiteColor, color, vig);
-  float fade = smoothstep(min(0.65, max(0.55, noiseB)), 1.0, vUv.y);
-  color = mix(vec4(0.0), color, fade);
-
-  gl_FragColor = color;
+  vec3 paper = vec3(0.91, 0.90, 0.86);
+  vec3 graphite = vec3(0.10, 0.16, 0.15);
+  vec3 cobalt = vec3(0.09, 0.25, 0.72);
+  vec3 color = paper;
+  color = mix(color, graphite, majorGrid * 0.12 + minorGrid * 0.035);
+  color = mix(color, cobalt, (routeH + routeV) * 0.07 + nodes * 0.24 + packet * 0.75);
+  gl_FragColor = vec4(color, 1.0);
 }
