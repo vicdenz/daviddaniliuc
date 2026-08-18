@@ -24,7 +24,7 @@ export default function PageCanvas({ children, className = "" }: PageCanvasProps
 					<InfrastructureBackdrop />
 				</Suspense>
 			) : null}
-			<div className="page-content">{children}</div>
+			<div className={`page-content${process.env.NODE_ENV !== "production" ? " page-content--backdrop-preview" : ""}`}>{children}</div>
 		</div>
 	);
 }
