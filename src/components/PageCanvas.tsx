@@ -6,25 +6,24 @@ const InfrastructureBackdrop = lazy(() => import("@/components/InfrastructureBac
 
 interface PageCanvasProps {
 	children: ReactNode;
-	className?: string;
 }
 
-export default function PageCanvas({ children, className = "" }: PageCanvasProps) {
+export default function PageCanvas({ children }: PageCanvasProps) {
 	const [graphicsReady, setGraphicsReady] = useState(false);
 
 	useEffect(() => {
-		const idleCallback = window.requestIdleCallback(() => setGraphicsReady(true), { timeout: 800 });
+		const idleCallback = window.requestIdleCallback(() => setGraphicsReady(true), { timeout: 250 });
 		return () => window.cancelIdleCallback(idleCallback);
 	}, []);
 
 	return (
-		<div className={`page-canvas ${className}`}>
+		<div className="page-canvas">
 			{graphicsReady ? (
 				<Suspense fallback={null}>
 					<InfrastructureBackdrop />
 				</Suspense>
 			) : null}
-			<div className={`page-content${process.env.NODE_ENV !== "production" ? " page-content--backdrop-preview" : ""}`}>{children}</div>
+			<div className="page-content">{children}</div>
 		</div>
 	);
 }

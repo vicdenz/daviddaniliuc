@@ -1,7 +1,6 @@
 uniform float uAspect;
 uniform float uScroll;
 uniform float uTime;
-uniform vec2 uResolution;
 uniform float uPixelRatio;
 uniform float uRandomSeed;
 uniform float uDitherMethod;
@@ -13,6 +12,12 @@ uniform float uDitherInkPunch;
 uniform float uDitherContrast;
 uniform float uDitherSoftness;
 uniform float uDitherSpread;
+uniform float uSecondaryDitherEnabled;
+uniform float uSecondaryDitherSize;
+uniform float uSecondaryDitherAmount;
+uniform float uSecondaryDitherCoverage;
+uniform float uSecondaryDitherInk;
+uniform float uSecondaryDitherSoftness;
 uniform float uLayerGrain;
 uniform float uLayerGrid;
 uniform float uLayerTunnel;
@@ -166,8 +171,22 @@ vec3 applyDither(vec3 source, vec3 paperColor) {
 	float mark = ditherMark(localPoint, uDitherPattern, uDitherSoftness);
 	vec3 punchedColor = clamp(paperColor + (source - paperColor) * uDitherInkPunch, 0.0, 1.0);
 	vec3 dithered = mix(paperColor, punchedColor, occupied * mark);
+	vec3 primaryResult = mix(source, dithered, uDitherAmount * uLayerDither);
 
-	return mix(source, dithered, uDitherAmount * uLayerDither);
+	float crossCellSize = max(uSecondaryDitherSize * uPixelRatio, 1.0);
+	vec2 crossPosition = (gl_FragCoord.xy + vec2(1.25, 2.25) * uPixelRatio) / crossCellSize;
+	vec2 crossCell = floor(crossPosition);
+	vec2 crossLocalPoint = fract(crossPosition) - 0.5;
+	float crossOrderedThreshold = bayer4(crossCell + vec2(2.0, 1.0));
+	float crossDiffusionThreshold = floydSteinbergThreshold(crossCell + vec2(29.0, 17.0));
+	float crossThreshold = mix(crossOrderedThreshold, crossDiffusionThreshold, uDitherMethod);
+	float crossCoverage = clamp(coverage * uSecondaryDitherCoverage, 0.0, 1.0);
+	float crossOccupied = smoothstep(crossThreshold - thresholdSoftness, crossThreshold + thresholdSoftness, crossCoverage);
+	float crossMark = ditherMark(crossLocalPoint, 1.0, uSecondaryDitherSoftness);
+	float residualWeight = 1.0 - occupied * mark * 0.68;
+	float crossAlpha = crossOccupied * crossMark * residualWeight * uSecondaryDitherAmount * uSecondaryDitherEnabled * uDitherAmount * uLayerDither;
+	vec3 crossInk = clamp(paperColor + (source - paperColor) * uDitherInkPunch * uSecondaryDitherInk, 0.0, 1.0);
+	return mix(primaryResult, crossInk, crossAlpha);
 }
 
 float line(float point, float width) {

@@ -1,0 +1,30 @@
+.panel {
+	position: fixed;
+	top: 18px;
+	left: 18px;
+	z-index: 20;
+	width: min(330px, calc(100vw - 36px));
+	border: 1px solid rgba(24, 40, 59, 0.22);
+	background: rgba(244, 240, 230, 0.96);
+	box-shadow: 0 12px 36px rgba(24, 40, 59, 0.12);
+	font-family: var(--controls-mono);
+	font-size: 12px;
+}
+
+.panel summary { display: flex; align-items: baseline; padding: 12px 14px; cursor: pointer; list-style: none; color: var(--ink); font-weight: 600; }
+.panel summary::-webkit-details-marker { display: none; }
+.panel summary::before { margin-right: 8px; color: var(--blue); content: "+"; }
+.panel[open] summary::before { content: "−"; }
+.panel summary > span { margin-right: auto; }
+.panel summary small { color: var(--muted); font-size: 10px; font-weight: 400; }
+.body { display: grid; gap: 12px; padding: 12px 14px 14px; border-top: 1px solid rgba(24, 40, 59, 0.14); }
+.pairing { display: grid; gap: 6px; color: var(--ink); font-weight: 600; }
+.pairing select { width: 100%; border: 1px solid rgba(24, 40, 59, 0.26); border-radius: 0; background: var(--paper); padding: 8px 10px; color: var(--ink); font: inherit; }
+.note { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.45; }
+.reset { border: 1px solid rgba(24, 40, 59, 0.26); background: transparent; padding: 8px; color: var(--ink); font: inherit; cursor: pointer; }
+.reset:hover { border-color: var(--blue); color: var(--blue); }
+.pairing select:focus-visible, .reset:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+@media (max-width: 680px) {
+	.panel { top: 10px; right: 10px; left: auto; width: min(310px, calc(50vw - 15px)); }
+}

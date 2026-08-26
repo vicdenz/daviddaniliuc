@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
-import { DM_Sans, IBM_Plex_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const dmSans = DM_Sans({
-	variable: "--font-dm-sans",
+const geistSans = Geist({
+	variable: "--font-geist-sans",
 	subsets: ["latin"],
+	weight: "variable",
 	display: "swap",
 });
 
-const ibmPlexMono = IBM_Plex_Mono({
-	variable: "--font-ibm-plex-mono",
+const geistMono = Geist_Mono({
+	variable: "--font-geist-mono",
 	subsets: ["latin"],
-	weight: ["400", "500"],
+	weight: "variable",
 	display: "swap",
 });
 
@@ -27,7 +28,7 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<body className={`${dmSans.variable} ${ibmPlexMono.variable} antialiased`}>{children}</body>
+			<body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
 		</html>
 	);
 }
