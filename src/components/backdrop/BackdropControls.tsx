@@ -5,7 +5,6 @@ import { useState } from "react";
 import {
 	DEFAULT_DITHER_SETTINGS,
 	DEFAULT_LAYER_SETTINGS,
-	type BackdropVariant,
 	type DitherMethod,
 	type DitherPattern,
 	type DitherSettings,
@@ -14,16 +13,10 @@ import {
 
 import styles from "./BackdropControls.module.css";
 
-const LAYER_OPTIONS: Record<BackdropVariant, Array<{ key: keyof LayerSettings; label: string }>> = {
-	infrastructure: [
-		["grain", "Paper grain"], ["grid", "Technical grid"], ["tunnel", "Tunnel frames"], ["braces", "Cross-bracing"], ["rails", "Scaffold rails"],
-		["nodes", "Nodes and circles"], ["routes", "Traffic routes"], ["packets", "Moving packets"], ["scan", "Scan wash"], ["dither", "Dither treatment"],
-	].map(([key, label]) => ({ key: key as keyof LayerSettings, label })),
-	topographic: [
-		["grain", "Survey paper grain"], ["grid", "Rotated survey grid"], ["tunnel", "Topographic contours"], ["braces", "Field hatching"], ["rails", "Elevation bands"],
-		["routes", "Signal traces"], ["packets", "Moving beacons"], ["scan", "Radial scan"], ["dither", "Dither treatment"],
-	].map(([key, label]) => ({ key: key as keyof LayerSettings, label })),
-};
+const LAYER_OPTIONS = [
+	["grain", "Survey paper grain"], ["grid", "Rotated survey grid"], ["tunnel", "Topographic contours"], ["braces", "Field hatching"], ["rails", "Elevation bands"],
+	["routes", "Signal traces"], ["packets", "Moving beacons"], ["scan", "Radial scan"], ["dither", "Dither treatment"],
+].map(([key, label]) => ({ key: key as keyof LayerSettings, label }));
 
 type NumericDitherKey = Exclude<keyof DitherSettings, "method" | "pattern" | "secondaryEnabled">;
 type Slider = {
@@ -117,16 +110,12 @@ export function DitherControls({ settings, onChange }: { settings: DitherSetting
 	);
 }
 
-export function LayerControls({ variant, layers, onVariantChange, onChange }: { variant: BackdropVariant; layers: LayerSettings; onVariantChange: (variant: BackdropVariant) => void; onChange: (layers: LayerSettings) => void }) {
+export function LayerControls({ layers, onChange }: { layers: LayerSettings; onChange: (layers: LayerSettings) => void }) {
 	return (
 		<details className={`${styles.panel} ${styles.layerPanel}`} open>
 			<summary><span>Backdrop layers</span><small>Testing</small></summary>
 			<div className={styles.layerBody}>
-				<label className={styles.variant}>
-					<span>Backdrop design</span>
-					<select value={variant} onChange={(event) => onVariantChange(event.target.value as BackdropVariant)}><option value="infrastructure">Infrastructure Blueprint</option><option value="topographic">Topographic Flow</option></select>
-				</label>
-				{LAYER_OPTIONS[variant].map(({ key, label }) => (
+				{LAYER_OPTIONS.map(({ key, label }) => (
 					<label className={styles.toggle} key={key}><input type="checkbox" checked={layers[key]} onChange={(event) => onChange({ ...layers, [key]: event.target.checked })} /><span>{label}</span></label>
 				))}
 				<button className={styles.reset} type="button" onClick={() => onChange(DEFAULT_LAYER_SETTINGS)}>Show all</button>

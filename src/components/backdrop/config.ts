@@ -1,4 +1,3 @@
-export type BackdropVariant = "infrastructure" | "topographic";
 export type DitherMethod = "diffusion" | "ordered";
 export type DitherPattern = "ordered" | "cross" | "diamond" | "dot";
 
@@ -20,9 +19,7 @@ export type DitherSettings = {
 	secondarySoftness: number;
 };
 
-export type LayerSettings = Record<"grain" | "grid" | "tunnel" | "braces" | "rails" | "nodes" | "routes" | "packets" | "scan" | "dither", boolean>;
-
-export const DEFAULT_BACKDROP_VARIANT: BackdropVariant = "topographic";
+export type LayerSettings = Record<"grain" | "grid" | "tunnel" | "braces" | "rails" | "routes" | "packets" | "scan" | "dither", boolean>;
 
 export const BACKDROP_ANIMATION = {
 	frameTime: 1000 / 60,
@@ -58,7 +55,6 @@ export const DEFAULT_LAYER_SETTINGS: LayerSettings = {
 	tunnel: true,
 	braces: true,
 	rails: true,
-	nodes: true,
 	routes: true,
 	packets: true,
 	scan: true,
@@ -89,7 +85,6 @@ export const LAYER_UNIFORMS = {
 	tunnel: "uLayerTunnel",
 	braces: "uLayerBraces",
 	rails: "uLayerRails",
-	nodes: "uLayerNodes",
 	routes: "uLayerRoutes",
 	packets: "uLayerPackets",
 	scan: "uLayerScan",

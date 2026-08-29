@@ -5,7 +5,6 @@ import { useEffect, useMemo, useRef } from "react";
 import { MathUtils, ShaderMaterial } from "three";
 
 import backgroundVertex from "@/components/shaders/vert/background.vert";
-import infrastructureFragment from "@/components/shaders/frag/infrastructure-background.frag";
 import topographicFragment from "@/components/shaders/frag/topographic-flow.frag";
 import {
 	BACKDROP_ANIMATION,
@@ -14,13 +13,11 @@ import {
 	LAYER_UNIFORMS,
 	METHOD_VALUE,
 	PATTERN_VALUE,
-	type BackdropVariant,
 	type DitherSettings,
 	type LayerSettings,
 } from "@/components/backdrop/config";
 
 type SceneProps = {
-	variant: BackdropVariant;
 	reduceMotion: boolean;
 	dither: DitherSettings;
 	layers: LayerSettings;
@@ -28,7 +25,6 @@ type SceneProps = {
 };
 
 type AnimationState = {
-	smoothedScroll: number;
 	previousScrollY: number | null;
 	noiseRate: number;
 	returnStartRate: number;
@@ -43,7 +39,6 @@ const createUniforms = () => {
 		uNoiseTime: { value: 0 },
 		uReveal: { value: 0 },
 		uAspect: { value: 1 },
-		uScroll: { value: 0 },
 		uPixelRatio: { value: 1 },
 		uRandomSeed: { value: 0 },
 		uDitherMethod: { value: METHOD_VALUE[DEFAULT_DITHER_SETTINGS.method] },
@@ -77,10 +72,9 @@ export function RenderScheduler({ reduceMotion }: Pick<SceneProps, "reduceMotion
 	return null;
 }
 
-export function BackdropScene({ variant, reduceMotion, dither, layers, randomSeed }: SceneProps) {
+export function BackdropScene({ reduceMotion, dither, layers, randomSeed }: SceneProps) {
 	const materialRef = useRef<ShaderMaterial>(null);
 	const animation = useRef<AnimationState>({
-		smoothedScroll: 0,
 		previousScrollY: null as number | null,
 		noiseRate: 1,
 		returnStartRate: 1,
@@ -91,7 +85,7 @@ export function BackdropScene({ variant, reduceMotion, dither, layers, randomSee
 	const { gl, invalidate, size, viewport } = useThree();
 	const uniforms = useMemo(createUniforms, []);
 
-	useEffect(() => invalidate(), [dither, invalidate, layers, randomSeed, variant]);
+	useEffect(() => invalidate(), [dither, invalidate, layers, randomSeed]);
 
 	useFrame(({ clock }, delta) => {
 		const material = materialRef.current;
@@ -101,9 +95,8 @@ export function BackdropScene({ variant, reduceMotion, dither, layers, randomSee
 		const scrollY = window.scrollY;
 		const scrollDelta = state.previousScrollY === null ? 0 : scrollY - state.previousScrollY;
 		state.previousScrollY = scrollY;
-		state.smoothedScroll = MathUtils.damp(state.smoothedScroll, reduceMotion ? 0 : scrollY / Math.max(innerHeight, 1), 3.4, delta);
 
-		const active = !reduceMotion && variant === "topographic";
+		const active = !reduceMotion;
 		const activity = active ? Math.min(Math.abs(scrollDelta) / BACKDROP_ANIMATION.scrollDistanceForMaxBoost, 1) : 0;
 		if (!active) {
 			state.noiseRate = state.returnStartRate = 1;
@@ -127,9 +120,8 @@ export function BackdropScene({ variant, reduceMotion, dither, layers, randomSee
 		values.uTime.value = reduceMotion ? 0 : clock.elapsedTime;
 		values.uNoiseTime.value = reduceMotion ? 0 : state.noiseTime;
 		const revealProgress = MathUtils.clamp(state.revealElapsed / BACKDROP_ANIMATION.revealDuration, 0, 1);
-		values.uReveal.value = reduceMotion || variant !== "topographic" ? 1 : 1 - (1 - revealProgress) ** 4;
+		values.uReveal.value = reduceMotion ? 1 : 1 - (1 - revealProgress) ** 4;
 		values.uAspect.value = size.width / Math.max(size.height, 1);
-		values.uScroll.value = state.smoothedScroll;
 		values.uPixelRatio.value = pixelRatio;
 		values.uRandomSeed.value = randomSeed;
 		values.uDitherMethod.value = METHOD_VALUE[dither.method];
@@ -142,7 +134,7 @@ export function BackdropScene({ variant, reduceMotion, dither, layers, randomSee
 	return (
 		<mesh scale={[viewport.width, viewport.height, 1]} frustumCulled={false}>
 			<planeGeometry args={[1, 1]} />
-			<shaderMaterial key={variant} ref={materialRef} vertexShader={backgroundVertex} fragmentShader={variant === "topographic" ? topographicFragment : infrastructureFragment} uniforms={uniforms} depthTest={false} depthWrite={false} toneMapped={false} />
+			<shaderMaterial ref={materialRef} vertexShader={backgroundVertex} fragmentShader={topographicFragment} uniforms={uniforms} depthTest={false} depthWrite={false} toneMapped={false} />
 		</mesh>
 	);
 }

@@ -1,27 +1,23 @@
-@import "tailwindcss";
-
 :root {
 	--paper: #f4f0e6;
-	--paper-sheet: #fbfaf6;
 	--ink: #18283b;
 	--muted: #536174;
 	--blue: #2457d6;
-	--line: rgba(24, 40, 59, 0.24);
 	--page-reveal-delay: 320ms;
 	--sans: var(--font-geist-sans), sans-serif;
-	--mono: var(--font-geist-mono), monospace;
+	--secondary: var(--font-geist-sans), sans-serif;
 	--controls-mono: var(--font-geist-mono), monospace;
 }
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); font-size: 17px; line-height: 1.58; -webkit-font-smoothing: antialiased; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); font-size: 17px; line-height: 1.58; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 a { color: inherit; text-decoration: none; transition: color 160ms ease, transform 160ms ease; }
 a:focus-visible { outline: 2px solid var(--blue); outline-offset: 5px; }
 ::selection { background: var(--blue); color: var(--paper); }
 
 .page-canvas { position: relative; min-height: 100vh; }
-.infrastructure-backdrop {
+.topographic-backdrop {
 	position: fixed;
 	inset: 0;
 	z-index: 0;
@@ -32,8 +28,8 @@ a:focus-visible { outline: 2px solid var(--blue); outline-offset: 5px; }
 		repeating-linear-gradient(100deg, transparent 0 47px, rgba(24, 40, 59, 0.045) 47px 48px);
 	pointer-events: none;
 }
-.infrastructure-backdrop canvas { display: block; width: 100% !important; height: 100% !important; }
-.page-content { position: relative; z-index: 1; /* Paper flip perspective paused: perspective: 1600px; perspective-origin: 50% 8vh; */ }
+.topographic-backdrop canvas { display: block; width: 100% !important; height: 100% !important; }
+.page-content { position: relative; z-index: 1; }
 
 .reveal {
 	--reveal-delay: 0ms;
@@ -44,7 +40,6 @@ a:focus-visible { outline: 2px solid var(--blue); outline-offset: 5px; }
 	animation: content-reveal var(--reveal-duration) cubic-bezier(0.22, 1, 0.36, 1) calc(var(--page-reveal-delay) + var(--reveal-delay)) both;
 }
 
-.reveal-from-top { --reveal-y: calc(var(--reveal-offset) * -1); }
 .reveal-from-bottom { --reveal-y: var(--reveal-offset); }
 .reveal-from-left { --reveal-x: calc(var(--reveal-offset) * -1); }
 .reveal-from-right { --reveal-x: var(--reveal-offset); }

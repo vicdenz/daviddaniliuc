@@ -1,6 +1,6 @@
 # David Daniliuc
 
-David's single-page portfolio, built with Next.js, React, TypeScript, Tailwind CSS, React Three Fiber, and a single-plane procedural backdrop.
+David's single-page portfolio, built with Next.js, React, TypeScript, React Three Fiber, and a single-plane procedural topographic backdrop.
 
 ## Development
 
@@ -30,4 +30,4 @@ Copy `.env.example` to `.env.local`, set the following variable, and restart the
 NEXT_PUBLIC_BACKDROP_TEST_CONTROLS=true
 ```
 
-The controls expose both retained backdrop designs, individual shader layers, dither tuning, and font testing. Set the variable to `false` or remove it to hide the panels and exclude the testing harness from production assets.
+The controls expose individual topographic shader layers, dither tuning, and font testing. Set the variable to `false` or remove it to hide the panels and exclude the testing harness from production assets.

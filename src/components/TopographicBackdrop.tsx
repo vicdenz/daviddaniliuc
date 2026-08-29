@@ -5,10 +5,8 @@ import { lazy, Suspense, useEffect, useState } from "react";
 
 import { BackdropScene, RenderScheduler } from "@/components/backdrop/BackdropScene";
 import {
-	DEFAULT_BACKDROP_VARIANT,
 	DEFAULT_DITHER_SETTINGS,
 	DEFAULT_LAYER_SETTINGS,
-	type BackdropVariant,
 	type DitherSettings,
 } from "@/components/backdrop/config";
 
@@ -19,9 +17,8 @@ const SHOW_TEST_PANELS = process.env.NEXT_PUBLIC_BACKDROP_TEST_CONTROLS === "tru
 const BackdropTestHarness = SHOW_TEST_PANELS ? lazy(() => import("@/components/backdrop/BackdropTestHarness")) : null;
 const BACKDROP_SEED = 1729;
 
-export default function InfrastructureBackdrop() {
+export default function TopographicBackdrop() {
 	const [reduceMotion, setReduceMotion] = useState(false);
-	const [variant, setVariant] = useState<BackdropVariant>(DEFAULT_BACKDROP_VARIANT);
 	const [dither, setDither] = useState<DitherSettings>(DEFAULT_DITHER_SETTINGS);
 	const [layers, setLayers] = useState(DEFAULT_LAYER_SETTINGS);
 
@@ -35,15 +32,15 @@ export default function InfrastructureBackdrop() {
 
 	return (
 		<>
-			<div className="infrastructure-backdrop" aria-hidden="true">
+			<div className="topographic-backdrop" aria-hidden="true">
 				<Canvas orthographic camera={{ position: [0, 0, 10], zoom: 1 }} dpr={[1, 1.5]} frameloop="demand" gl={{ alpha: false, antialias: false, depth: false, stencil: false, powerPreference: "high-performance" }} onCreated={({ gl }) => gl.setClearColor("#f4f0e6", 1)}>
 					<RenderScheduler reduceMotion={reduceMotion} />
-					<BackdropScene variant={variant} reduceMotion={reduceMotion} dither={dither} layers={layers} randomSeed={BACKDROP_SEED} />
+					<BackdropScene reduceMotion={reduceMotion} dither={dither} layers={layers} randomSeed={BACKDROP_SEED} />
 				</Canvas>
 			</div>
 			{BackdropTestHarness ? (
 				<Suspense fallback={null}>
-					<BackdropTestHarness variant={variant} setVariant={setVariant} dither={dither} setDither={setDither} layers={layers} setLayers={setLayers} />
+					<BackdropTestHarness dither={dither} setDither={setDither} layers={layers} setLayers={setLayers} />
 				</Suspense>
 			) : null}
 		</>

@@ -5,21 +5,16 @@ import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import TypographyControls from "@/components/TypographyControls";
 import { DitherControls, LayerControls } from "@/components/backdrop/BackdropControls";
 import {
-	DEFAULT_BACKDROP_VARIANT,
 	DEFAULT_DITHER_SETTINGS,
-	type BackdropVariant,
 	type DitherSettings,
 	type LayerSettings,
 } from "@/components/backdrop/config";
 
 const STORAGE_KEYS = {
-	dither: "infrastructure-dither-settings-v9",
-	variant: "backdrop-variant-v2",
+	dither: "topographic-dither-settings-v1",
 } as const;
 
 type BackdropTestHarnessProps = {
-	variant: BackdropVariant;
-	setVariant: Dispatch<SetStateAction<BackdropVariant>>;
 	dither: DitherSettings;
 	setDither: Dispatch<SetStateAction<DitherSettings>>;
 	layers: LayerSettings;
@@ -47,15 +42,6 @@ function readDitherSettings(): DitherSettings {
 	}
 }
 
-function readVariant(): BackdropVariant {
-	try {
-		const stored = localStorage.getItem(STORAGE_KEYS.variant);
-		return stored === "infrastructure" || stored === "topographic" ? stored : DEFAULT_BACKDROP_VARIANT;
-	} catch {
-		return DEFAULT_BACKDROP_VARIANT;
-	}
-}
-
 function writeSetting(key: string, value: string) {
 	try {
 		localStorage.setItem(key, value);
@@ -64,18 +50,13 @@ function writeSetting(key: string, value: string) {
 	}
 }
 
-export default function BackdropTestHarness({ variant, setVariant, dither, setDither, layers, setLayers }: BackdropTestHarnessProps) {
+export default function BackdropTestHarness({ dither, setDither, layers, setLayers }: BackdropTestHarnessProps) {
 	const [settingsLoaded, setSettingsLoaded] = useState(false);
 
 	useEffect(() => {
-		setVariant(readVariant());
 		setDither(readDitherSettings());
 		setSettingsLoaded(true);
-	}, [setDither, setVariant]);
-
-	useEffect(() => {
-		if (settingsLoaded) writeSetting(STORAGE_KEYS.variant, variant);
-	}, [settingsLoaded, variant]);
+	}, [setDither]);
 
 	useEffect(() => {
 		if (settingsLoaded) writeSetting(STORAGE_KEYS.dither, JSON.stringify(dither));
@@ -83,7 +64,7 @@ export default function BackdropTestHarness({ variant, setVariant, dither, setDi
 
 	return (
 		<>
-			<LayerControls variant={variant} layers={layers} onVariantChange={setVariant} onChange={setLayers} />
+			<LayerControls layers={layers} onChange={setLayers} />
 			<TypographyControls />
 			<DitherControls settings={dither} onChange={setDither} />
 		</>

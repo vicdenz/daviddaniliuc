@@ -23,7 +23,7 @@
 .controlHeading { display: flex; justify-content: space-between; gap: 16px; color: var(--ink); }
 .control output { color: var(--blue); font-variant-numeric: tabular-nums; }
 .control small { color: var(--muted); font-family: var(--sans); font-size: 11px; line-height: 1.35; }
-.control select, .variant select { width: 100%; border: 1px solid rgba(24, 40, 59, 0.26); border-radius: 0; background: var(--paper); padding: 8px 10px; color: var(--ink); font: inherit; }
+.control select { width: 100%; border: 1px solid rgba(24, 40, 59, 0.26); border-radius: 0; background: var(--paper); padding: 8px 10px; color: var(--ink); font: inherit; }
 .control input[type="range"] { width: 100%; accent-color: var(--blue); }
 .secondary { display: grid; gap: 12px; min-width: 0; margin: 2px 0 0; padding: 14px 0 0; border: 0; border-top: 1px solid rgba(24, 40, 59, 0.16); }
 .secondary legend { padding: 0 8px 0 0; color: var(--blue); font-weight: 600; }
@@ -38,11 +38,10 @@
 .actions button, .reset { border: 1px solid rgba(24, 40, 59, 0.26); background: transparent; padding: 8px; color: var(--ink); font: inherit; cursor: pointer; }
 .actions button:hover, .reset:hover { border-color: var(--blue); color: var(--blue); }
 .layerBody { display: grid; gap: 9px; padding: 12px 14px 14px; border-top: 1px solid rgba(24, 40, 59, 0.14); }
-.variant { display: grid; gap: 6px; padding-bottom: 4px; color: var(--ink); font-weight: 600; }
 .toggle { display: flex; align-items: center; gap: 9px; color: var(--ink); cursor: pointer; }
 .toggle input { width: 14px; height: 14px; margin: 0; accent-color: var(--blue); }
 .reset { margin-top: 5px; }
-.control select:focus-visible, .control input:focus-visible, .secondaryToggle input:focus-visible, .actions button:focus-visible, .variant select:focus-visible, .toggle input:focus-visible, .reset:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.control select:focus-visible, .control input:focus-visible, .secondaryToggle input:focus-visible, .actions button:focus-visible, .toggle input:focus-visible, .reset:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 
 @media (max-width: 680px) {
 	.ditherPanel { right: 10px; bottom: 10px; width: min(310px, calc(100vw - 20px)); }
