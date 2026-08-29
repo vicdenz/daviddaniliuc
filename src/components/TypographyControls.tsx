@@ -80,7 +80,7 @@ export default function TypographyControls() {
 		if (!settingsLoaded) return;
 		const page = document.body;
 		page.style.setProperty("--sans", fontOption(primaryId).stack);
-		page.style.setProperty("--secondary", fontOption(secondaryId).stack);
+		page.style.setProperty("--mono", fontOption(secondaryId).stack);
 		try {
 			localStorage.setItem(STORAGE_KEY, JSON.stringify({ primaryId, secondaryId }));
 		} catch {
@@ -90,7 +90,7 @@ export default function TypographyControls() {
 
 	useEffect(() => () => {
 		document.body.style.removeProperty("--sans");
-		document.body.style.removeProperty("--secondary");
+		document.body.style.removeProperty("--mono");
 	}, []);
 
 	const reset = () => {

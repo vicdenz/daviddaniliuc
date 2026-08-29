@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 :root {
 	--paper: #f4f0e6;
 	--ink: #18283b;
@@ -5,13 +7,13 @@
 	--blue: #2457d6;
 	--page-reveal-delay: 320ms;
 	--sans: var(--font-geist-sans), sans-serif;
-	--secondary: var(--font-geist-sans), sans-serif;
+	--mono: var(--font-geist-mono), monospace;
 	--controls-mono: var(--font-geist-mono), monospace;
 }
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); font-size: 17px; line-height: 1.58; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); font-size: 17px; line-height: 1.58; -webkit-font-smoothing: antialiased; }
 a { color: inherit; text-decoration: none; transition: color 160ms ease, transform 160ms ease; }
 a:focus-visible { outline: 2px solid var(--blue); outline-offset: 5px; }
 ::selection { background: var(--blue); color: var(--paper); }
