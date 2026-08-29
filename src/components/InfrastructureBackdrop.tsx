@@ -12,14 +12,17 @@ import {
 	type DitherSettings,
 } from "@/components/backdrop/config";
 
-const SHOW_TEST_CONTROLS = process.env.NEXT_PUBLIC_BACKDROP_TEST_CONTROLS === "true";
-const BackdropTestHarness = SHOW_TEST_CONTROLS ? lazy(() => import("@/components/backdrop/BackdropTestHarness")) : null;
+// The harness owns every development-only panel, including font pairing controls.
+// Keeping the conditional import here prevents its UI, fonts, and runtime behavior
+// from entering production when the flag is disabled.
+const SHOW_TEST_PANELS = process.env.NEXT_PUBLIC_BACKDROP_TEST_CONTROLS === "true";
+const BackdropTestHarness = SHOW_TEST_PANELS ? lazy(() => import("@/components/backdrop/BackdropTestHarness")) : null;
+const BACKDROP_SEED = 1729;
 
 export default function InfrastructureBackdrop() {
 	const [reduceMotion, setReduceMotion] = useState(false);
 	const [variant, setVariant] = useState<BackdropVariant>(DEFAULT_BACKDROP_VARIANT);
 	const [dither, setDither] = useState<DitherSettings>(DEFAULT_DITHER_SETTINGS);
-	const [randomSeed, setRandomSeed] = useState(0);
 	const [layers, setLayers] = useState(DEFAULT_LAYER_SETTINGS);
 
 	useEffect(() => {
@@ -30,18 +33,12 @@ export default function InfrastructureBackdrop() {
 		return () => mediaQuery.removeEventListener("change", updatePreference);
 	}, []);
 
-	useEffect(() => {
-		const randomValue = new Uint32Array(1);
-		crypto.getRandomValues(randomValue);
-		setRandomSeed((randomValue[0] / 0xffffffff) * 4096);
-	}, []);
-
 	return (
 		<>
 			<div className="infrastructure-backdrop" aria-hidden="true">
-				<Canvas orthographic camera={{ position: [0, 0, 10], zoom: 1 }} dpr={[1, 1.5]} frameloop="demand" gl={{ alpha: false, antialias: true, powerPreference: "high-performance" }} onCreated={({ gl }) => gl.setClearColor("#f4f0e6", 1)}>
+				<Canvas orthographic camera={{ position: [0, 0, 10], zoom: 1 }} dpr={[1, 1.5]} frameloop="demand" gl={{ alpha: false, antialias: false, depth: false, stencil: false, powerPreference: "high-performance" }} onCreated={({ gl }) => gl.setClearColor("#f4f0e6", 1)}>
 					<RenderScheduler reduceMotion={reduceMotion} />
-					<BackdropScene variant={variant} reduceMotion={reduceMotion} dither={dither} layers={layers} randomSeed={randomSeed} />
+					<BackdropScene variant={variant} reduceMotion={reduceMotion} dither={dither} layers={layers} randomSeed={BACKDROP_SEED} />
 				</Canvas>
 			</div>
 			{BackdropTestHarness ? (

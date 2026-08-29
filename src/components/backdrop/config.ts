@@ -26,7 +26,8 @@ export const DEFAULT_BACKDROP_VARIANT: BackdropVariant = "topographic";
 
 export const BACKDROP_ANIMATION = {
 	frameTime: 1000 / 60,
-	revealDuration: 0.8,
+	revealDelay: 0.82,
+	revealDuration: 0.72,
 	scrollDistanceForMaxBoost: 40,
 	baseNoiseSpeed: 1.6,
 	maxScrollSpeed: 12,

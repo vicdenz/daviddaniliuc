@@ -118,13 +118,16 @@ export function BackdropScene({ variant, reduceMotion, dither, layers, randomSee
 			state.noiseRate = MathUtils.lerp(state.returnStartRate, 1, 1 - (1 - progress) ** 3);
 		}
 		if (!reduceMotion) state.noiseTime += delta * BACKDROP_ANIMATION.baseNoiseSpeed * state.noiseRate;
-		if (active && document.visibilityState === "visible") state.revealElapsed += Math.min(delta, 0.05);
+		if (active && document.visibilityState === "visible") {
+			state.revealElapsed = Math.max(performance.now() / 1000 - BACKDROP_ANIMATION.revealDelay, 0);
+		}
 
 		const values = material.uniforms;
 		const pixelRatio = gl.getPixelRatio();
 		values.uTime.value = reduceMotion ? 0 : clock.elapsedTime;
 		values.uNoiseTime.value = reduceMotion ? 0 : state.noiseTime;
-		values.uReveal.value = reduceMotion || variant !== "topographic" ? 1 : MathUtils.smoothstep(state.revealElapsed, 0, BACKDROP_ANIMATION.revealDuration);
+		const revealProgress = MathUtils.clamp(state.revealElapsed / BACKDROP_ANIMATION.revealDuration, 0, 1);
+		values.uReveal.value = reduceMotion || variant !== "topographic" ? 1 : 1 - (1 - revealProgress) ** 4;
 		values.uAspect.value = size.width / Math.max(size.height, 1);
 		values.uScroll.value = state.smoothedScroll;
 		values.uPixelRatio.value = pixelRatio;

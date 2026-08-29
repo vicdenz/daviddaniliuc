@@ -2,11 +2,12 @@
 
 :root {
 	--paper: #f4f0e6;
-	--paper-sheet: #f2eee3;
+	--paper-sheet: #fbfaf6;
 	--ink: #18283b;
 	--muted: #536174;
 	--blue: #2457d6;
 	--line: rgba(24, 40, 59, 0.24);
+	--page-reveal-delay: 320ms;
 	--sans: var(--font-geist-sans), sans-serif;
 	--mono: var(--font-geist-mono), monospace;
 	--controls-mono: var(--font-geist-mono), monospace;
@@ -20,8 +21,57 @@ a:focus-visible { outline: 2px solid var(--blue); outline-offset: 5px; }
 ::selection { background: var(--blue); color: var(--paper); }
 
 .page-canvas { position: relative; min-height: 100vh; }
-.infrastructure-backdrop { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+.infrastructure-backdrop {
+	position: fixed;
+	inset: 0;
+	z-index: 0;
+	background-color: var(--paper);
+	background-image:
+		radial-gradient(ellipse at 62% 28%, rgba(175, 194, 230, 0.22), transparent 44%),
+		repeating-linear-gradient(10deg, transparent 0 47px, rgba(24, 40, 59, 0.045) 47px 48px),
+		repeating-linear-gradient(100deg, transparent 0 47px, rgba(24, 40, 59, 0.045) 47px 48px);
+	pointer-events: none;
+}
 .infrastructure-backdrop canvas { display: block; width: 100% !important; height: 100% !important; }
-.page-content { position: relative; z-index: 1; }
+.page-content { position: relative; z-index: 1; /* Paper flip perspective paused: perspective: 1600px; perspective-origin: 50% 8vh; */ }
 
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+.reveal {
+	--reveal-delay: 0ms;
+	--reveal-duration: 800ms;
+	--reveal-offset: 20px;
+	--reveal-x: 0px;
+	--reveal-y: 0px;
+	animation: content-reveal var(--reveal-duration) cubic-bezier(0.22, 1, 0.36, 1) calc(var(--page-reveal-delay) + var(--reveal-delay)) both;
+}
+
+.reveal-from-top { --reveal-y: calc(var(--reveal-offset) * -1); }
+.reveal-from-bottom { --reveal-y: var(--reveal-offset); }
+.reveal-from-left { --reveal-x: calc(var(--reveal-offset) * -1); }
+.reveal-from-right { --reveal-x: var(--reveal-offset); }
+
+.reveal-offset-12 { --reveal-offset: 12px; }
+.reveal-offset-16 { --reveal-offset: 16px; }
+.reveal-offset-24 { --reveal-offset: 24px; }
+
+.reveal-0 { --reveal-delay: 0ms; }
+.reveal-100 { --reveal-delay: 100ms; }
+.reveal-200 { --reveal-delay: 200ms; }
+.reveal-300 { --reveal-delay: 300ms; }
+.reveal-400 { --reveal-delay: 400ms; }
+.reveal-500 { --reveal-delay: 500ms; }
+
+@keyframes content-reveal {
+	from {
+		opacity: 0;
+		transform: translate3d(var(--reveal-x), var(--reveal-y), 0);
+	}
+	to {
+		opacity: 1;
+		transform: translate3d(0, 0, 0);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	html { scroll-behavior: auto; }
+	.reveal { animation: none; }
+}
