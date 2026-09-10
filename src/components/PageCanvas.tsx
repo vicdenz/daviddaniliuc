@@ -2,7 +2,10 @@
 
 import { lazy, Suspense, type ReactNode } from "react";
 
-const TopographicBackdrop = lazy(() => import("@/components/TopographicBackdrop"));
+// Start fetching the graphics bundle as soon as the page shell hydrates rather
+// than waiting for Suspense to render the lazy component.
+const topographicBackdropModule = import("@/components/TopographicBackdrop");
+const TopographicBackdrop = lazy(() => topographicBackdropModule);
 
 interface PageCanvasProps {
 	children: ReactNode;

@@ -19,6 +19,7 @@ const BACKDROP_SEED = 1729;
 
 export default function TopographicBackdrop() {
 	const [reduceMotion, setReduceMotion] = useState(false);
+	const [canvasReady, setCanvasReady] = useState(false);
 	const [dither, setDither] = useState<DitherSettings>(DEFAULT_DITHER_SETTINGS);
 	const [layers, setLayers] = useState(DEFAULT_LAYER_SETTINGS);
 
@@ -32,8 +33,11 @@ export default function TopographicBackdrop() {
 
 	return (
 		<>
-			<div className="topographic-backdrop" aria-hidden="true">
-				<Canvas orthographic camera={{ position: [0, 0, 10], zoom: 1 }} dpr={[1, 1.5]} frameloop="demand" gl={{ alpha: false, antialias: false, depth: false, stencil: false, powerPreference: "high-performance" }} onCreated={({ gl }) => gl.setClearColor("#f4f0e6", 1)}>
+			<div className={`topographic-backdrop${canvasReady ? " topographic-backdrop-ready" : ""}`} aria-hidden="true">
+				<Canvas orthographic camera={{ position: [0, 0, 10], zoom: 1 }} dpr={[1, 1.5]} frameloop="demand" gl={{ alpha: false, antialias: false, depth: false, stencil: false, powerPreference: "high-performance" }} onCreated={({ gl }) => {
+					gl.setClearColor("#f4f0e6", 1);
+					setCanvasReady(true);
+				}}>
 					<RenderScheduler reduceMotion={reduceMotion} />
 					<BackdropScene reduceMotion={reduceMotion} dither={dither} layers={layers} randomSeed={BACKDROP_SEED} />
 				</Canvas>

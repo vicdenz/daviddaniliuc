@@ -19,6 +19,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
 	title: "David Daniliuc",
 	description: "David Daniliuc, infrastructure engineering intern @ Shopify and cs & math student @ UofT.",
+	icons: {
+		icon: [{ url: "/david-logo.png", type: "image/png", sizes: "1024x1024" }],
+	},
 };
 
 export default function RootLayout({

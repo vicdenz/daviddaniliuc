@@ -111,15 +111,25 @@ export function BackdropScene({ reduceMotion, dither, layers, randomSeed }: Scen
 			state.noiseRate = MathUtils.lerp(state.returnStartRate, 1, 1 - (1 - progress) ** 3);
 		}
 		if (!reduceMotion) state.noiseTime += delta * BACKDROP_ANIMATION.baseNoiseSpeed * state.noiseRate;
+		// Reveal time begins with the first visible rendered frame, not page time.
+		// The graphics bundle can arrive after the page animation has begun; using
+		// an absolute clock made those late loads jump straight to a finished scene.
 		if (active && document.visibilityState === "visible") {
-			state.revealElapsed = Math.max(performance.now() / 1000 - BACKDROP_ANIMATION.revealDelay, 0);
+			state.revealElapsed = Math.min(
+				state.revealElapsed + Math.min(delta, 0.05),
+				BACKDROP_ANIMATION.revealDelay + BACKDROP_ANIMATION.revealDuration,
+			);
 		}
 
 		const values = material.uniforms;
 		const pixelRatio = gl.getPixelRatio();
 		values.uTime.value = reduceMotion ? 0 : clock.elapsedTime;
 		values.uNoiseTime.value = reduceMotion ? 0 : state.noiseTime;
-		const revealProgress = MathUtils.clamp(state.revealElapsed / BACKDROP_ANIMATION.revealDuration, 0, 1);
+		const revealProgress = MathUtils.clamp(
+			(state.revealElapsed - BACKDROP_ANIMATION.revealDelay) / BACKDROP_ANIMATION.revealDuration,
+			0,
+			1,
+		);
 		values.uReveal.value = reduceMotion ? 1 : 1 - (1 - revealProgress) ** 4;
 		values.uAspect.value = size.width / Math.max(size.height, 1);
 		values.uPixelRatio.value = pixelRatio;

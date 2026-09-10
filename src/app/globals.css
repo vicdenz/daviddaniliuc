@@ -30,7 +30,14 @@ a:focus-visible { outline: 2px solid var(--blue); outline-offset: 5px; }
 		repeating-linear-gradient(100deg, transparent 0 47px, rgba(24, 40, 59, 0.045) 47px 48px);
 	pointer-events: none;
 }
-.topographic-backdrop canvas { display: block; width: 100% !important; height: 100% !important; }
+.topographic-backdrop canvas {
+	display: block;
+	width: 100% !important;
+	height: 100% !important;
+	opacity: 0;
+	transition: opacity 720ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.topographic-backdrop-ready canvas { opacity: 1; }
 .page-content { position: relative; z-index: 1; }
 
 .reveal {
@@ -71,4 +78,5 @@ a:focus-visible { outline: 2px solid var(--blue); outline-offset: 5px; }
 @media (prefers-reduced-motion: reduce) {
 	html { scroll-behavior: auto; }
 	.reveal { animation: none; }
+	.topographic-backdrop canvas { transition: none; }
 }

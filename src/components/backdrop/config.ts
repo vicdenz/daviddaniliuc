@@ -23,7 +23,9 @@ export type LayerSettings = Record<"grain" | "grid" | "tunnel" | "braces" | "rai
 
 export const BACKDROP_ANIMATION = {
 	frameTime: 1000 / 60,
-	revealDelay: 0.82,
+	// The canvas opacity transition provides the initial handoff from the CSS
+	// fallback, so the procedural reveal can begin immediately with it.
+	revealDelay: 0,
 	revealDuration: 0.72,
 	scrollDistanceForMaxBoost: 40,
 	baseNoiseSpeed: 1.6,
