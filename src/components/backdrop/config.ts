@@ -21,16 +21,37 @@ export type DitherSettings = {
 
 export type LayerSettings = Record<"grain" | "grid" | "tunnel" | "braces" | "rails" | "routes" | "packets" | "scan" | "dither", boolean>;
 
+export const SITE_ANIMATION = {
+	loaderFallbackMs: 4000,
+	loaderFadeMs: 80,
+	loaderFadeEasing: "ease-in",
+	backdropFadeMs: 960,
+	backdropFadeEasing: "cubic-bezier(0.16, 1, 0.3, 1)",
+	contentRevealMs: 840,
+	contentRevealEasing: "cubic-bezier(0.22, 1, 0.36, 1)",
+	contentRevealDelayMs: 0,
+	contentRevealStaggerMs: {
+		0: 0,
+		100: 110,
+		200: 265,
+		300: 430,
+		400: 580,
+		500: 710,
+	},
+	shaderRevealDelayMs: 0,
+	shaderRevealDurationMs: 1200,
+} as const;
+
 export const BACKDROP_ANIMATION = {
 	frameTime: 1000 / 60,
 	// The canvas opacity transition provides the initial handoff from the CSS
 	// fallback, so the procedural reveal can begin immediately with it.
-	revealDelay: 0,
-	revealDuration: 0.72,
+	revealDelay: SITE_ANIMATION.shaderRevealDelayMs / 1000,
+	revealDuration: SITE_ANIMATION.shaderRevealDurationMs / 1000,
 	scrollDistanceForMaxBoost: 40,
 	baseNoiseSpeed: 1.6,
 	maxScrollSpeed: 12,
-	scrollReturnDuration: 1.8,
+	scrollReturnDuration: 2.1,
 } as const;
 
 export const DEFAULT_DITHER_SETTINGS: DitherSettings = {

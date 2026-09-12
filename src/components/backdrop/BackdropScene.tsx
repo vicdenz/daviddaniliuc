@@ -22,6 +22,7 @@ type SceneProps = {
 	dither: DitherSettings;
 	layers: LayerSettings;
 	randomSeed: number;
+	reveal: boolean;
 };
 
 type AnimationState = {
@@ -50,12 +51,12 @@ const createUniforms = () => {
 	return uniforms;
 };
 
-export function RenderScheduler({ reduceMotion }: Pick<SceneProps, "reduceMotion">) {
+export function RenderScheduler({ reduceMotion, reveal }: Pick<SceneProps, "reduceMotion" | "reveal">) {
 	const invalidate = useThree((state) => state.invalidate);
 
 	useEffect(() => {
 		invalidate();
-		if (reduceMotion) return;
+		if (reduceMotion || !reveal) return;
 		let animationFrame = 0;
 		let previousFrame = 0;
 		const schedule = (timestamp: number) => {
@@ -67,12 +68,12 @@ export function RenderScheduler({ reduceMotion }: Pick<SceneProps, "reduceMotion
 		};
 		animationFrame = requestAnimationFrame(schedule);
 		return () => cancelAnimationFrame(animationFrame);
-	}, [invalidate, reduceMotion]);
+	}, [invalidate, reduceMotion, reveal]);
 
 	return null;
 }
 
-export function BackdropScene({ reduceMotion, dither, layers, randomSeed }: SceneProps) {
+export function BackdropScene({ reduceMotion, dither, layers, randomSeed, reveal }: SceneProps) {
 	const materialRef = useRef<ShaderMaterial>(null);
 	const animation = useRef<AnimationState>({
 		previousScrollY: null as number | null,
@@ -96,7 +97,7 @@ export function BackdropScene({ reduceMotion, dither, layers, randomSeed }: Scen
 		const scrollDelta = state.previousScrollY === null ? 0 : scrollY - state.previousScrollY;
 		state.previousScrollY = scrollY;
 
-		const active = !reduceMotion;
+		const active = !reduceMotion && reveal;
 		const activity = active ? Math.min(Math.abs(scrollDelta) / BACKDROP_ANIMATION.scrollDistanceForMaxBoost, 1) : 0;
 		if (!active) {
 			state.noiseRate = state.returnStartRate = 1;
@@ -123,14 +124,14 @@ export function BackdropScene({ reduceMotion, dither, layers, randomSeed }: Scen
 
 		const values = material.uniforms;
 		const pixelRatio = gl.getPixelRatio();
-		values.uTime.value = reduceMotion ? 0 : clock.elapsedTime;
-		values.uNoiseTime.value = reduceMotion ? 0 : state.noiseTime;
+		values.uTime.value = active ? clock.elapsedTime : 0;
+		values.uNoiseTime.value = active ? state.noiseTime : 0;
 		const revealProgress = MathUtils.clamp(
 			(state.revealElapsed - BACKDROP_ANIMATION.revealDelay) / BACKDROP_ANIMATION.revealDuration,
 			0,
 			1,
 		);
-		values.uReveal.value = reduceMotion ? 1 : 1 - (1 - revealProgress) ** 4;
+		values.uReveal.value = reduceMotion && reveal ? 1 : active ? 1 - (1 - revealProgress) ** 4 : 0;
 		values.uAspect.value = size.width / Math.max(size.height, 1);
 		values.uPixelRatio.value = pixelRatio;
 		values.uRandomSeed.value = randomSeed;

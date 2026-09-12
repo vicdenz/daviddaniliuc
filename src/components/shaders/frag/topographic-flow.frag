@@ -30,7 +30,7 @@ uniform float uLayerScan;
 uniform float uLayerDither;
 varying vec2 vUv;
 
-const vec3 PAPER = vec3(0.957, 0.941, 0.902);
+const vec3 PAPER = vec3(0.980, 0.973, 0.941);
 const vec3 COOL_PAPER = vec3(0.925, 0.941, 0.957);
 const vec3 INK = vec3(0.094, 0.157, 0.231);
 const vec3 COBALT = vec3(0.141, 0.341, 0.839);
