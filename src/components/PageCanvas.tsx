@@ -54,6 +54,7 @@ export default function PageCanvas({ children }: PageCanvasProps) {
 	}, [exitLoader]);
 
 	const pageReady = loaderPhase === "ready";
+	const loaderVisible = loaderPhase === "loading";
 	const handleLoaderTransitionEnd = (event: TransitionEvent<HTMLDivElement>) => {
 		if (event.propertyName !== "opacity" || loaderPhase !== "fading" || readyFrame.current !== null) return;
 
@@ -65,7 +66,7 @@ export default function PageCanvas({ children }: PageCanvasProps) {
 
 	return (
 		<div className="page-canvas" style={pageAnimationStyle}>
-			<div className={`page-loader${loaderPhase === "fading" ? " page-loader-fading" : ""}${pageReady ? " page-loader-complete" : ""}`} aria-hidden="true" onTransitionEnd={handleLoaderTransitionEnd} />
+			<div className={`page-loader${loaderVisible ? "" : " page-loader-hidden"}`} aria-hidden="true" onTransitionEnd={handleLoaderTransitionEnd} />
 			<Suspense fallback={null}>
 				<TopographicBackdrop onReady={handleBackdropReady} reveal={pageReady} />
 			</Suspense>
