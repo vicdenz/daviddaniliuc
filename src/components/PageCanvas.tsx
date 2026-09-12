@@ -3,6 +3,7 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState, type CSSProperties, type TransitionEvent, type ReactNode } from "react";
 
 import { SITE_ANIMATION } from "@/components/backdrop/config";
+import { PageReadyProvider } from "@/components/PageReadyContext";
 
 // Start fetching the graphics bundle as soon as the page shell hydrates rather
 // than waiting for Suspense to render the lazy component.
@@ -14,8 +15,12 @@ const pageAnimationStyle = {
 	"--backdrop-fade-duration": `${SITE_ANIMATION.backdropFadeMs}ms`,
 	"--backdrop-fade-easing": SITE_ANIMATION.backdropFadeEasing,
 	"--content-reveal-duration": `${SITE_ANIMATION.contentRevealMs}ms`,
-	"--content-reveal-easing": SITE_ANIMATION.contentRevealEasing,
+	"--content-reveal-easing": SITE_ANIMATION.revealEasing,
 	"--content-reveal-delay": `${SITE_ANIMATION.contentRevealDelayMs}ms`,
+	"--section-divider-reveal-delay": `${SITE_ANIMATION.sectionDividerRevealDelayMs}ms`,
+	"--section-divider-reveal-duration": `${SITE_ANIMATION.sectionDividerRevealMs}ms`,
+	"--section-divider-reveal-easing": SITE_ANIMATION.revealEasing,
+	"--section-divider-reveal-stagger": `${SITE_ANIMATION.sectionDividerRevealStaggerMs}ms`,
 	"--content-reveal-delay-0": `${SITE_ANIMATION.contentRevealStaggerMs[0]}ms`,
 	"--content-reveal-delay-100": `${SITE_ANIMATION.contentRevealStaggerMs[100]}ms`,
 	"--content-reveal-delay-200": `${SITE_ANIMATION.contentRevealStaggerMs[200]}ms`,
@@ -48,6 +53,16 @@ export default function PageCanvas({ children }: PageCanvasProps) {
 		};
 	}, [exitLoader]);
 
+	useEffect(() => {
+		const previousScrollRestoration = window.history.scrollRestoration;
+		window.history.scrollRestoration = "manual";
+		window.scrollTo(0, 0);
+
+		return () => {
+			window.history.scrollRestoration = previousScrollRestoration;
+		};
+	}, []);
+
 	const handleBackdropReady = useCallback(() => {
 		const fontsReady = document.fonts?.ready ?? Promise.resolve();
 		void fontsReady.then(exitLoader);
@@ -65,12 +80,14 @@ export default function PageCanvas({ children }: PageCanvasProps) {
 	};
 
 	return (
-		<div className="page-canvas" style={pageAnimationStyle}>
-			<div className={`page-loader${loaderVisible ? "" : " page-loader-hidden"}`} aria-hidden="true" onTransitionEnd={handleLoaderTransitionEnd} />
-			<Suspense fallback={null}>
-				<TopographicBackdrop onReady={handleBackdropReady} reveal={pageReady} />
-			</Suspense>
-			<div className={`page-content${pageReady ? " page-content-ready" : ""}`}>{children}</div>
-		</div>
+		<PageReadyProvider value={pageReady}>
+			<div className="page-canvas" style={pageAnimationStyle}>
+				<div className={`page-loader${loaderVisible ? "" : " page-loader-hidden"}`} aria-hidden="true" onTransitionEnd={handleLoaderTransitionEnd} />
+				<Suspense fallback={null}>
+					<TopographicBackdrop onReady={handleBackdropReady} reveal={pageReady} />
+				</Suspense>
+				<div className={`page-content${pageReady ? " page-content-ready" : ""}`}>{children}</div>
+			</div>
+		</PageReadyProvider>
 	);
 }

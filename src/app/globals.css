@@ -54,6 +54,10 @@ a:focus-visible { outline: 2px solid var(--blue); outline-offset: 5px; }
 	opacity: 0;
 	transform: translate3d(var(--reveal-x), var(--reveal-y), 0);
 }
+.page-content:not(.page-content-ready) .section-divider {
+	animation: none;
+	transform: scaleX(0);
+}
 
 .reveal {
 	--reveal-delay: var(--content-reveal-delay-0);
@@ -61,6 +65,7 @@ a:focus-visible { outline: 2px solid var(--blue); outline-offset: 5px; }
 	--reveal-offset: 20px;
 	--reveal-x: 0px;
 	--reveal-y: 0px;
+	will-change: opacity, transform;
 	animation: content-reveal var(--reveal-duration) var(--content-reveal-easing) calc(var(--content-reveal-delay) + var(--reveal-delay)) both;
 }
 
@@ -79,6 +84,13 @@ a:focus-visible { outline: 2px solid var(--blue); outline-offset: 5px; }
 .reveal-400 { --reveal-delay: var(--content-reveal-delay-400); }
 .reveal-500 { --reveal-delay: var(--content-reveal-delay-500); }
 
+.section-divider {
+	transform: scaleX(0);
+	transform-origin: center;
+	will-change: transform;
+	animation: section-divider-reveal var(--section-divider-reveal-duration) var(--section-divider-reveal-easing) var(--section-divider-delay) both;
+}
+
 @keyframes content-reveal {
 	from {
 		opacity: 0;
@@ -90,9 +102,14 @@ a:focus-visible { outline: 2px solid var(--blue); outline-offset: 5px; }
 	}
 }
 
+@keyframes section-divider-reveal {
+	to { transform: scaleX(1); }
+}
+
 @media (prefers-reduced-motion: reduce) {
 	html { scroll-behavior: auto; }
 	.reveal { animation: none; }
+	.section-divider { animation: none; transform: none; }
 	.page-loader { transition: none; }
 	.topographic-backdrop { transition: none; }
 }
