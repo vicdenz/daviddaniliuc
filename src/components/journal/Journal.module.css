@@ -6,6 +6,8 @@
 	--entry-title-size: clamp(25px, 3.2vw, 32px);
 	--entry-detail-size: clamp(15.5px, 1.956vw, 19.56px);
 	--entry-description-size: clamp(15.5px, 1.85vw, 16.9px);
+	--intro-name-size: clamp(50px, 7.2vw, 72px);
+	--intro-copy-size: clamp(44px, 6.3vw, 64px);
 	width: min(calc(100% - 24px), 960px);
 	min-height: calc(100vh - 24px);
 	margin: clamp(56px, 8vh, 82px) auto 12px;
@@ -16,7 +18,8 @@
 
 .introduction, .index { width: 100%; margin-left: 0; }
 .introduction { margin-bottom: 30px; }
-.introduction h1 { max-width: none; margin: 0 0 8px; font-size: clamp(50px, 7.2vw, 72px); font-weight: 650; letter-spacing: -0.06em; line-height: 0.98; text-wrap: balance; }
+.introduction h1 { max-width: none; margin: 0 0 8px; font-size: var(--intro-copy-size); font-weight: 650; letter-spacing: -0.06em; line-height: 0.98; text-wrap: balance; }
+.introduction :global(.name-underline) { font-size: var(--intro-name-size); }
 
 .index { margin-bottom: 34px; }
 .sectionDivider { --section-divider-delay: var(--section-divider-reveal-delay); box-sizing: border-box; width: calc(100% - 64px); height: 2px; margin: -18px 32px 16px; border: 0; background: var(--ink); }

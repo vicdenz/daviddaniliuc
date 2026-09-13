@@ -6,23 +6,15 @@ import { MathUtils, ShaderMaterial } from "three";
 
 import backgroundVertex from "@/components/shaders/vert/background.vert";
 import topographicFragment from "@/components/shaders/frag/topographic-flow.frag";
-import {
-	BACKDROP_ANIMATION,
-	DEFAULT_DITHER_SETTINGS,
-	DITHER_UNIFORMS,
-	LAYER_UNIFORMS,
-	METHOD_VALUE,
-	PATTERN_VALUE,
-	type DitherSettings,
-	type LayerSettings,
-} from "@/components/backdrop/config";
+import { BACKDROP_ANIMATION } from "@/components/backdrop/config";
 
 type SceneProps = {
 	reduceMotion: boolean;
-	dither: DitherSettings;
-	layers: LayerSettings;
-	randomSeed: number;
 	reveal: boolean;
+};
+
+type BackdropSceneProps = SceneProps & {
+	onReady: () => void;
 };
 
 type AnimationState = {
@@ -31,6 +23,7 @@ type AnimationState = {
 	returnStartRate: number;
 	returnElapsed: number;
 	noiseTime: number;
+	sceneTime: number;
 	revealElapsed: number;
 };
 
@@ -41,13 +34,32 @@ const createUniforms = () => {
 		uReveal: { value: 0 },
 		uAspect: { value: 1 },
 		uPixelRatio: { value: 1 },
-		uRandomSeed: { value: 0 },
-		uDitherMethod: { value: METHOD_VALUE[DEFAULT_DITHER_SETTINGS.method] },
-		uDitherPattern: { value: PATTERN_VALUE[DEFAULT_DITHER_SETTINGS.pattern] },
-		uSecondaryDitherEnabled: { value: Number(DEFAULT_DITHER_SETTINGS.secondaryEnabled) },
+		uRandomSeed: { value: 1729 },
+		uDitherMethod: { value: 1 },
+		uDitherPattern: { value: 2 },
+		uDitherSize: { value: 4 },
+		uDitherAmount: { value: 0.94 },
+		uDitherCoverage: { value: 2.5 },
+		uDitherInkPunch: { value: 3.6 },
+		uDitherContrast: { value: 0.49 },
+		uDitherSoftness: { value: 0.84 },
+		uDitherSpread: { value: 0.92 },
+		uSecondaryDitherEnabled: { value: 1 },
+		uSecondaryDitherSize: { value: 3.5 },
+		uSecondaryDitherAmount: { value: 0.26 },
+		uSecondaryDitherCoverage: { value: 1.23 },
+		uSecondaryDitherInk: { value: 1.06 },
+		uSecondaryDitherSoftness: { value: 0.19 },
+		uLayerGrain: { value: 1 },
+		uLayerGrid: { value: 1 },
+		uLayerTunnel: { value: 1 },
+		uLayerBraces: { value: 1 },
+		uLayerRails: { value: 1 },
+		uLayerRoutes: { value: 1 },
+		uLayerPackets: { value: 1 },
+		uLayerScan: { value: 1 },
+		uLayerDither: { value: 1 },
 	};
-	for (const [key, name] of DITHER_UNIFORMS) uniforms[name] = { value: Number(DEFAULT_DITHER_SETTINGS[key]) };
-	for (const name of Object.values(LAYER_UNIFORMS)) uniforms[name] = { value: 1 };
 	return uniforms;
 };
 
@@ -73,26 +85,32 @@ export function RenderScheduler({ reduceMotion, reveal }: Pick<SceneProps, "redu
 	return null;
 }
 
-export function BackdropScene({ reduceMotion, dither, layers, randomSeed, reveal }: SceneProps) {
+export function BackdropScene({ reduceMotion, reveal, onReady }: BackdropSceneProps) {
 	const materialRef = useRef<ShaderMaterial>(null);
+	const readyFrame = useRef<number | null>(null);
+	const readySignaled = useRef(false);
 	const animation = useRef<AnimationState>({
 		previousScrollY: null as number | null,
 		noiseRate: 1,
 		returnStartRate: 1,
 		returnElapsed: BACKDROP_ANIMATION.scrollReturnDuration,
 		noiseTime: 0,
+		sceneTime: 0,
 		revealElapsed: 0,
 	});
-	const { gl, invalidate, size, viewport } = useThree();
+	const { gl, size, viewport } = useThree();
 	const uniforms = useMemo(createUniforms, []);
 
-	useEffect(() => invalidate(), [dither, invalidate, layers, randomSeed]);
+	useEffect(() => () => {
+		if (readyFrame.current !== null) window.cancelAnimationFrame(readyFrame.current);
+	}, []);
 
-	useFrame(({ clock }, delta) => {
+	useFrame((_, delta) => {
 		const material = materialRef.current;
 		if (!material) return;
 
 		const state = animation.current;
+		const frameDelta = Math.min(delta, 0.05);
 		const scrollY = window.scrollY;
 		const scrollDelta = state.previousScrollY === null ? 0 : scrollY - state.previousScrollY;
 		state.previousScrollY = scrollY;
@@ -107,24 +125,27 @@ export function BackdropScene({ reduceMotion, dither, layers, randomSeed, reveal
 			state.returnStartRate = state.noiseRate;
 			state.returnElapsed = 0;
 		} else {
-			state.returnElapsed = Math.min(state.returnElapsed + delta, BACKDROP_ANIMATION.scrollReturnDuration);
+			state.returnElapsed = Math.min(state.returnElapsed + frameDelta, BACKDROP_ANIMATION.scrollReturnDuration);
 			const progress = state.returnElapsed / BACKDROP_ANIMATION.scrollReturnDuration;
 			state.noiseRate = MathUtils.lerp(state.returnStartRate, 1, 1 - (1 - progress) ** 3);
 		}
-		if (!reduceMotion) state.noiseTime += delta * BACKDROP_ANIMATION.baseNoiseSpeed * state.noiseRate;
+		if (active) {
+			state.sceneTime += frameDelta;
+			state.noiseTime += frameDelta * BACKDROP_ANIMATION.baseNoiseSpeed * state.noiseRate;
+		}
 		// Reveal time begins with the first visible rendered frame, not page time.
 		// The graphics bundle can arrive after the page animation has begun; using
 		// an absolute clock made those late loads jump straight to a finished scene.
 		if (active && document.visibilityState === "visible") {
 			state.revealElapsed = Math.min(
-				state.revealElapsed + Math.min(delta, 0.05),
+				state.revealElapsed + frameDelta,
 				BACKDROP_ANIMATION.revealDelay + BACKDROP_ANIMATION.revealDuration,
 			);
 		}
 
 		const values = material.uniforms;
 		const pixelRatio = gl.getPixelRatio();
-		values.uTime.value = active ? clock.elapsedTime : 0;
+		values.uTime.value = active ? state.sceneTime : 0;
 		values.uNoiseTime.value = active ? state.noiseTime : 0;
 		const revealProgress = MathUtils.clamp(
 			(state.revealElapsed - BACKDROP_ANIMATION.revealDelay) / BACKDROP_ANIMATION.revealDuration,
@@ -134,12 +155,14 @@ export function BackdropScene({ reduceMotion, dither, layers, randomSeed, reveal
 		values.uReveal.value = reduceMotion && reveal ? 1 : active ? 1 - (1 - revealProgress) ** 4 : 0;
 		values.uAspect.value = size.width / Math.max(size.height, 1);
 		values.uPixelRatio.value = pixelRatio;
-		values.uRandomSeed.value = randomSeed;
-		values.uDitherMethod.value = METHOD_VALUE[dither.method];
-		values.uDitherPattern.value = PATTERN_VALUE[dither.pattern];
-		values.uSecondaryDitherEnabled.value = Number(dither.secondaryEnabled);
-		for (const [key, name] of DITHER_UNIFORMS) values[name].value = Number(dither[key]);
-		for (const key of Object.keys(LAYER_UNIFORMS) as Array<keyof LayerSettings>) values[LAYER_UNIFORMS[key]].value = Number(layers[key]);
+
+		if (!readySignaled.current) {
+			readySignaled.current = true;
+			readyFrame.current = window.requestAnimationFrame(() => {
+				readyFrame.current = null;
+				onReady();
+			});
+		}
 	});
 
 	return (

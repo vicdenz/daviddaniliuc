@@ -11,7 +11,7 @@ export default function Journal() {
 		<main className={styles.journal}>
 			<section className={`${styles.introduction} reveal reveal-from-bottom reveal-offset-24 reveal-0`} aria-labelledby="intro-title">
 				<div>
-					<h1 id="intro-title">I&apos;m <NameUnderline>David Daniliuc</NameUnderline>,<br />a software engineer studying systems and backend.</h1>
+					<h1 id="intro-title">I&apos;m <NameUnderline>David Daniliuc</NameUnderline>,<br />a CS student into building systems & making music.</h1>
 				</div>
 			</section>
 

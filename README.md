@@ -18,16 +18,6 @@ Use `npm run lint` for linting and `npm run build` for a production build.
 - `src/components/journal/ExperienceList.tsx` — experience rendering
 - `src/components/journal/ProjectList.tsx` — project rendering
 - `src/components/journal/Journal.module.css` — journal typography, paper, spacing, and responsive styles
-- `src/components/backdrop/config.ts` — production backdrop defaults and shader mappings
+- `src/components/backdrop/config.ts` — page and backdrop timing
 - `src/components/backdrop/BackdropScene.tsx` — shader plane and animation behavior
 - `src/components/shaders/` — fragment and vertex shaders
-
-## Backdrop testing controls
-
-Copy `.env.example` to `.env.local`, set the following variable, and restart the development server:
-
-```bash
-NEXT_PUBLIC_BACKDROP_TEST_CONTROLS=true
-```
-
-The controls expose individual topographic shader layers, dither tuning, and font testing. Set the variable to `false` or remove it to hide the panels and exclude the testing harness from production assets.

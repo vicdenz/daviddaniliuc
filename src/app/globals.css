@@ -1,20 +1,16 @@
-@import "tailwindcss";
-
 :root {
 	--paper: #faf8f0;
 	--loader-paper: var(--paper);
 	--ink: #18283b;
 	--muted: #536174;
 	--blue: #2457d6;
-	--sans: var(--font-geist-sans), sans-serif;
-	--mono: var(--font-geist-mono), monospace;
-	--controls-mono: var(--font-geist-mono), monospace;
+	--sans: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); font-size: 17px; line-height: 1.58; -webkit-font-smoothing: antialiased; }
-a { color: inherit; text-decoration: none; transition: color 160ms ease, transform 160ms ease; }
+a { color: inherit; text-decoration: none; transition: color 160ms ease; }
 a:focus-visible { outline: 2px solid var(--blue); outline-offset: 5px; }
 ::selection { background: var(--blue); color: var(--paper); }
 
@@ -26,6 +22,7 @@ a:focus-visible { outline: 2px solid var(--blue); outline-offset: 5px; }
 	background: var(--loader-paper);
 	will-change: opacity;
 	transition: opacity var(--loader-fade-duration) var(--loader-fade-easing);
+	animation: loader-failsafe var(--loader-fade-duration) var(--loader-fade-easing) var(--loader-fallback-delay) forwards;
 }
 .page-loader-hidden { opacity: 0; pointer-events: none; }
 .topographic-backdrop {
@@ -50,13 +47,13 @@ a:focus-visible { outline: 2px solid var(--blue); outline-offset: 5px; }
 .topographic-backdrop-ready { opacity: 1; }
 .page-content { position: relative; z-index: 1; }
 .page-content:not(.page-content-ready) .reveal {
-	animation: none;
 	opacity: 0;
 	transform: translate3d(var(--reveal-x), var(--reveal-y), 0);
+	animation: content-reveal var(--content-reveal-duration) var(--content-reveal-easing) calc(var(--loader-fallback-delay) + var(--loader-fade-duration) + 50ms) both;
 }
 .page-content:not(.page-content-ready) .section-divider {
-	animation: none;
 	transform: scaleX(0);
+	animation: section-divider-reveal var(--section-divider-reveal-duration) var(--section-divider-reveal-easing) calc(var(--loader-fallback-delay) + var(--loader-fade-duration) + 50ms) both;
 }
 
 .reveal {
@@ -65,7 +62,6 @@ a:focus-visible { outline: 2px solid var(--blue); outline-offset: 5px; }
 	--reveal-offset: 20px;
 	--reveal-x: 0px;
 	--reveal-y: 0px;
-	will-change: opacity, transform;
 	animation: content-reveal var(--reveal-duration) var(--content-reveal-easing) calc(var(--content-reveal-delay) + var(--reveal-delay)) both;
 }
 
@@ -74,21 +70,22 @@ a:focus-visible { outline: 2px solid var(--blue); outline-offset: 5px; }
 .reveal-from-right { --reveal-x: var(--reveal-offset); }
 
 .reveal-offset-12 { --reveal-offset: 12px; }
-.reveal-offset-16 { --reveal-offset: 16px; }
 .reveal-offset-24 { --reveal-offset: 24px; }
 
 .reveal-0 { --reveal-delay: var(--content-reveal-delay-0); }
 .reveal-100 { --reveal-delay: var(--content-reveal-delay-100); }
 .reveal-200 { --reveal-delay: var(--content-reveal-delay-200); }
 .reveal-300 { --reveal-delay: var(--content-reveal-delay-300); }
-.reveal-400 { --reveal-delay: var(--content-reveal-delay-400); }
 .reveal-500 { --reveal-delay: var(--content-reveal-delay-500); }
 
 .section-divider {
 	transform: scaleX(0);
 	transform-origin: center;
-	will-change: transform;
 	animation: section-divider-reveal var(--section-divider-reveal-duration) var(--section-divider-reveal-easing) var(--section-divider-delay) both;
+}
+
+@keyframes loader-failsafe {
+	to { opacity: 0; pointer-events: none; }
 }
 
 @keyframes content-reveal {
@@ -110,6 +107,12 @@ a:focus-visible { outline: 2px solid var(--blue); outline-offset: 5px; }
 	html { scroll-behavior: auto; }
 	.reveal { animation: none; }
 	.section-divider { animation: none; transform: none; }
-	.page-loader { transition: none; }
+	.page-content:not(.page-content-ready) .reveal {
+		animation: content-reveal 1ms linear calc(var(--loader-fallback-delay) + 1ms) both;
+	}
+	.page-content:not(.page-content-ready) .section-divider {
+		animation: section-divider-reveal 1ms linear calc(var(--loader-fallback-delay) + 1ms) both;
+	}
+	.page-loader { transition: none; animation-duration: 1ms; animation-timing-function: linear; }
 	.topographic-backdrop { transition: none; }
 }

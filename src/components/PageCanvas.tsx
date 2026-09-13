@@ -12,6 +12,7 @@ const TopographicBackdrop = lazy(() => topographicBackdropModule);
 const pageAnimationStyle = {
 	"--loader-fade-duration": `${SITE_ANIMATION.loaderFadeMs}ms`,
 	"--loader-fade-easing": SITE_ANIMATION.loaderFadeEasing,
+	"--loader-fallback-delay": `${SITE_ANIMATION.loaderFallbackMs}ms`,
 	"--backdrop-fade-duration": `${SITE_ANIMATION.backdropFadeMs}ms`,
 	"--backdrop-fade-easing": SITE_ANIMATION.backdropFadeEasing,
 	"--content-reveal-duration": `${SITE_ANIMATION.contentRevealMs}ms`,
@@ -25,7 +26,6 @@ const pageAnimationStyle = {
 	"--content-reveal-delay-100": `${SITE_ANIMATION.contentRevealStaggerMs[100]}ms`,
 	"--content-reveal-delay-200": `${SITE_ANIMATION.contentRevealStaggerMs[200]}ms`,
 	"--content-reveal-delay-300": `${SITE_ANIMATION.contentRevealStaggerMs[300]}ms`,
-	"--content-reveal-delay-400": `${SITE_ANIMATION.contentRevealStaggerMs[400]}ms`,
 	"--content-reveal-delay-500": `${SITE_ANIMATION.contentRevealStaggerMs[500]}ms`,
 } as CSSProperties;
 
@@ -37,18 +37,38 @@ export default function PageCanvas({ children }: PageCanvasProps) {
 	const [loaderPhase, setLoaderPhase] = useState<"loading" | "fading" | "ready">("loading");
 	const exitStarted = useRef(false);
 	const readyFrame = useRef<number | null>(null);
+	const transitionFallback = useRef<number | null>(null);
+
+	const finishLoader = useCallback(() => {
+		if (readyFrame.current !== null) return;
+		if (transitionFallback.current !== null) {
+			window.clearTimeout(transitionFallback.current);
+			transitionFallback.current = null;
+		}
+
+		readyFrame.current = window.requestAnimationFrame(() => {
+			readyFrame.current = null;
+			setLoaderPhase("ready");
+		});
+	}, []);
 
 	const exitLoader = useCallback(() => {
 		if (exitStarted.current) return;
 		exitStarted.current = true;
+		if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+			setLoaderPhase("ready");
+			return;
+		}
+
 		setLoaderPhase("fading");
-		if (matchMedia("(prefers-reduced-motion: reduce)").matches) setLoaderPhase("ready");
-	}, []);
+		transitionFallback.current = window.setTimeout(finishLoader, SITE_ANIMATION.loaderFadeMs + 50);
+	}, [finishLoader]);
 
 	useEffect(() => {
 		const fallbackTimer = window.setTimeout(exitLoader, SITE_ANIMATION.loaderFallbackMs);
 		return () => {
 			window.clearTimeout(fallbackTimer);
+			if (transitionFallback.current !== null) window.clearTimeout(transitionFallback.current);
 			if (readyFrame.current !== null) window.cancelAnimationFrame(readyFrame.current);
 		};
 	}, [exitLoader]);
@@ -71,18 +91,13 @@ export default function PageCanvas({ children }: PageCanvasProps) {
 	const pageReady = loaderPhase === "ready";
 	const loaderVisible = loaderPhase === "loading";
 	const handleLoaderTransitionEnd = (event: TransitionEvent<HTMLDivElement>) => {
-		if (event.propertyName !== "opacity" || loaderPhase !== "fading" || readyFrame.current !== null) return;
-
-		readyFrame.current = window.requestAnimationFrame(() => {
-			readyFrame.current = null;
-			setLoaderPhase("ready");
-		});
+		if (event.propertyName === "opacity" && loaderPhase === "fading") finishLoader();
 	};
 
 	return (
 		<PageReadyProvider value={pageReady}>
 			<div className="page-canvas" style={pageAnimationStyle}>
-				<div className={`page-loader${loaderVisible ? "" : " page-loader-hidden"}`} aria-hidden="true" onTransitionEnd={handleLoaderTransitionEnd} />
+				{loaderPhase !== "ready" && <div className={`page-loader${loaderVisible ? "" : " page-loader-hidden"}`} aria-hidden="true" onTransitionEnd={handleLoaderTransitionEnd} />}
 				<Suspense fallback={null}>
 					<TopographicBackdrop onReady={handleBackdropReady} reveal={pageReady} />
 				</Suspense>
