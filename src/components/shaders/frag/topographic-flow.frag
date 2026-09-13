@@ -3,31 +3,6 @@ uniform float uTime;
 uniform float uNoiseTime;
 uniform float uReveal;
 uniform float uPixelRatio;
-uniform float uRandomSeed;
-uniform float uDitherMethod;
-uniform float uDitherPattern;
-uniform float uDitherSize;
-uniform float uDitherAmount;
-uniform float uDitherCoverage;
-uniform float uDitherInkPunch;
-uniform float uDitherContrast;
-uniform float uDitherSoftness;
-uniform float uDitherSpread;
-uniform float uSecondaryDitherEnabled;
-uniform float uSecondaryDitherSize;
-uniform float uSecondaryDitherAmount;
-uniform float uSecondaryDitherCoverage;
-uniform float uSecondaryDitherInk;
-uniform float uSecondaryDitherSoftness;
-uniform float uLayerGrain;
-uniform float uLayerGrid;
-uniform float uLayerTunnel;
-uniform float uLayerBraces;
-uniform float uLayerRails;
-uniform float uLayerRoutes;
-uniform float uLayerPackets;
-uniform float uLayerScan;
-uniform float uLayerDither;
 varying vec2 vUv;
 
 const vec3 PAPER = vec3(0.980, 0.973, 0.941);
@@ -35,6 +10,31 @@ const vec3 COOL_PAPER = vec3(0.925, 0.941, 0.957);
 const vec3 INK = vec3(0.094, 0.157, 0.231);
 const vec3 COBALT = vec3(0.141, 0.341, 0.839);
 const vec3 PERIWINKLE = vec3(0.686, 0.761, 0.902);
+const float RANDOM_SEED = 1729.0;
+const float DITHER_METHOD = 1.0;
+const float DITHER_PATTERN = 2.0;
+const float DITHER_SIZE = 4.0;
+const float DITHER_AMOUNT = 0.94;
+const float DITHER_COVERAGE = 2.5;
+const float DITHER_INK_PUNCH = 3.6;
+const float DITHER_CONTRAST = 0.49;
+const float DITHER_SOFTNESS = 0.84;
+const float DITHER_SPREAD = 0.92;
+const float SECONDARY_DITHER_ENABLED = 1.0;
+const float SECONDARY_DITHER_SIZE = 3.5;
+const float SECONDARY_DITHER_AMOUNT = 0.26;
+const float SECONDARY_DITHER_COVERAGE = 1.23;
+const float SECONDARY_DITHER_INK = 1.06;
+const float SECONDARY_DITHER_SOFTNESS = 0.19;
+const float LAYER_GRAIN = 1.0;
+const float LAYER_GRID = 1.0;
+const float LAYER_TUNNEL = 1.0;
+const float LAYER_BRACES = 1.0;
+const float LAYER_RAILS = 1.0;
+const float LAYER_ROUTES = 1.0;
+const float LAYER_PACKETS = 1.0;
+const float LAYER_SCAN = 1.0;
+const float LAYER_DITHER = 1.0;
 
 float hash21(vec2 point) {
 	point = fract(point * vec2(234.34, 435.17));
@@ -43,7 +43,7 @@ float hash21(vec2 point) {
 }
 
 float seededHash(vec2 point, float channel) {
-	return hash21(point + vec2(uRandomSeed * 0.103 + channel * 19.19, uRandomSeed * 0.173 + channel * 47.47));
+	return hash21(point + vec2(RANDOM_SEED * 0.103 + channel * 19.19, RANDOM_SEED * 0.173 + channel * 47.47));
 }
 
 float valueNoise(vec2 point, float channel) {
@@ -105,7 +105,7 @@ float diffusionThreshold(vec2 cell) {
 	carriedError += seededHash(cell + vec2(0.0, -1.0), 151.0) * (5.0 / 16.0);
 	carriedError += seededHash(cell + vec2(-direction, -1.0), 151.0) * (1.0 / 16.0);
 	float diffused = fract(seededHash(cell, 157.0) + (carriedError - 0.5) * 1.8);
-	return mix(bayer4(cell), diffused, uDitherSpread);
+	return mix(bayer4(cell), diffused, DITHER_SPREAD);
 }
 
 float ditherMark(vec2 localPoint, float pattern, float softness) {
@@ -124,33 +124,33 @@ float ditherMark(vec2 localPoint, float pattern, float softness) {
 }
 
 vec3 applyDither(vec3 source, vec3 paperColor) {
-	float cellSize = max(uDitherSize * uPixelRatio, 1.0);
+	float cellSize = max(DITHER_SIZE * uPixelRatio, 1.0);
 	vec2 cellPosition = gl_FragCoord.xy / cellSize;
 	vec2 cell = floor(cellPosition);
 	vec2 localPoint = fract(cellPosition) - 0.5;
 	vec3 colorDistance = abs(source - paperColor);
 	float inkAmount = max(colorDistance.r, max(colorDistance.g, colorDistance.b));
-	float coverage = clamp(inkAmount * 5.0 * uDitherCoverage, 0.0, 1.0);
-	coverage = clamp((coverage - 0.5) * uDitherContrast + 0.5, 0.0, 1.0);
-	float threshold = mix(bayer4(cell), diffusionThreshold(cell), uDitherMethod);
-	float thresholdSoftness = mix(0.002, 0.08, uDitherSoftness);
+	float coverage = clamp(inkAmount * 5.0 * DITHER_COVERAGE, 0.0, 1.0);
+	coverage = clamp((coverage - 0.5) * DITHER_CONTRAST + 0.5, 0.0, 1.0);
+	float threshold = mix(bayer4(cell), diffusionThreshold(cell), DITHER_METHOD);
+	float thresholdSoftness = mix(0.002, 0.08, DITHER_SOFTNESS);
 	float occupied = smoothstep(threshold - thresholdSoftness, threshold + thresholdSoftness, coverage);
-	vec3 punched = clamp(paperColor + (source - paperColor) * uDitherInkPunch, 0.0, 1.0);
-	float primaryMark = ditherMark(localPoint, uDitherPattern, uDitherSoftness);
+	vec3 punched = clamp(paperColor + (source - paperColor) * DITHER_INK_PUNCH, 0.0, 1.0);
+	float primaryMark = ditherMark(localPoint, DITHER_PATTERN, DITHER_SOFTNESS);
 	vec3 dithered = mix(paperColor, punched, occupied * primaryMark);
-	vec3 primaryResult = mix(source, dithered, uDitherAmount * uLayerDither);
+	vec3 primaryResult = mix(source, dithered, DITHER_AMOUNT * LAYER_DITHER);
 
-	float crossCellSize = max(uSecondaryDitherSize * uPixelRatio, 1.0);
+	float crossCellSize = max(SECONDARY_DITHER_SIZE * uPixelRatio, 1.0);
 	vec2 crossPosition = (gl_FragCoord.xy + vec2(1.25, 2.25) * uPixelRatio) / crossCellSize;
 	vec2 crossCell = floor(crossPosition);
 	vec2 crossLocalPoint = fract(crossPosition) - 0.5;
-	float crossThreshold = mix(bayer4(crossCell + vec2(2.0, 1.0)), diffusionThreshold(crossCell + vec2(29.0, 17.0)), uDitherMethod);
-	float crossCoverage = clamp(coverage * uSecondaryDitherCoverage, 0.0, 1.0);
+	float crossThreshold = mix(bayer4(crossCell + vec2(2.0, 1.0)), diffusionThreshold(crossCell + vec2(29.0, 17.0)), DITHER_METHOD);
+	float crossCoverage = clamp(coverage * SECONDARY_DITHER_COVERAGE, 0.0, 1.0);
 	float crossOccupied = smoothstep(crossThreshold - thresholdSoftness, crossThreshold + thresholdSoftness, crossCoverage);
-	float crossMark = ditherMark(crossLocalPoint, 1.0, uSecondaryDitherSoftness);
+	float crossMark = ditherMark(crossLocalPoint, 1.0, SECONDARY_DITHER_SOFTNESS);
 	float residualWeight = 1.0 - occupied * primaryMark * 0.68;
-	float crossAlpha = crossOccupied * crossMark * residualWeight * uSecondaryDitherAmount * uSecondaryDitherEnabled * uDitherAmount * uLayerDither;
-	vec3 crossInk = clamp(paperColor + (source - paperColor) * uDitherInkPunch * uSecondaryDitherInk, 0.0, 1.0);
+	float crossAlpha = crossOccupied * crossMark * residualWeight * SECONDARY_DITHER_AMOUNT * SECONDARY_DITHER_ENABLED * DITHER_AMOUNT * LAYER_DITHER;
+	vec3 crossInk = clamp(paperColor + (source - paperColor) * DITHER_INK_PUNCH * SECONDARY_DITHER_INK, 0.0, 1.0);
 	return mix(primaryResult, crossInk, crossAlpha);
 }
 
@@ -178,7 +178,7 @@ void main() {
 	float grain = (seededHash(grainCell, 349.0) - 0.5) * 0.026;
 	vec3 paperVariation = vec3(0.070, 0.052, 0.018) * paperCloud;
 	paperVariation += vec3(-0.012, 0.006, 0.034) * paperFiber + vec3(grain);
-	vec3 paperColor = mix(PAPER, clamp(PAPER + paperVariation, 0.0, 1.0), uLayerGrain * atmosphericReveal);
+	vec3 paperColor = mix(PAPER, clamp(PAPER + paperVariation, 0.0, 1.0), LAYER_GRAIN * atmosphericReveal);
 	vec3 color = paperColor;
 
 	vec2 warp = vec2(
@@ -192,21 +192,21 @@ void main() {
 	vec2 surveyPoint = gridRotation * point;
 	float surveyGrid = max(periodicLine(surveyPoint.x * 5.2, 0.014), periodicLine(surveyPoint.y * 5.2, 0.014));
 	float surveyGridFine = max(periodicLine(surveyPoint.x * 20.8, 0.030), periodicLine(surveyPoint.y * 20.8, 0.030));
-	float gridAlpha = clamp(surveyGrid * 0.25 + surveyGridFine * 0.060, 0.0, 0.30) * uLayerGrid * growthReveal;
+	float gridAlpha = clamp(surveyGrid * 0.25 + surveyGridFine * 0.060, 0.0, 0.30) * LAYER_GRID * growthReveal;
 	color = mix(color, INK, gridAlpha);
 
 	float contour = periodicLine(field * 14.0, 0.060);
 	float majorContour = periodicLine(field * 3.5, 0.032);
-	float contourAlpha = clamp(contour * 0.32 + majorContour * 0.43, 0.0, 0.56) * uLayerTunnel * growthReveal;
+	float contourAlpha = clamp(contour * 0.32 + majorContour * 0.43, 0.0, 0.56) * LAYER_TUNNEL * growthReveal;
 	color = mix(color, mix(PERIWINKLE, COBALT, 0.26), contourAlpha);
 
 	float hatch = periodicLine((surveyPoint.x + surveyPoint.y * 0.28) * 23.0 + field * 5.0 + uNoiseTime * 0.035, 0.052);
 	float hatchMask = smoothstep(0.10, 0.30, abs(field - 0.5));
-	color = mix(color, INK, hatch * hatchMask * 0.14 * uLayerBraces * atmosphericReveal);
+	color = mix(color, INK, hatch * hatchMask * 0.14 * LAYER_BRACES * atmosphericReveal);
 
 	float elevationBand = smoothstep(0.78, 0.98, sin(field * 18.8496 - uNoiseTime * 0.12) * 0.5 + 0.5);
 	vec3 elevationColor = mix(COOL_PAPER, PERIWINKLE, 0.48);
-	color = mix(color, elevationColor, elevationBand * 0.30 * uLayerRails * atmosphericReveal);
+	color = mix(color, elevationColor, elevationBand * 0.30 * LAYER_RAILS * atmosphericReveal);
 
 	float routeAlpha = 0.0;
 	float packetAlpha = 0.0;
@@ -230,8 +230,8 @@ void main() {
 			packetAlpha = max(packetAlpha, packet);
 		}
 	}
-	color = mix(color, COBALT, routeAlpha * 0.21 * uLayerRoutes * trafficReveal);
-	color = mix(color, mix(COBALT, INK, 0.08), packetAlpha * 0.92 * uLayerPackets * trafficReveal);
+	color = mix(color, COBALT, routeAlpha * 0.21 * LAYER_ROUTES * trafficReveal);
+	color = mix(color, mix(COBALT, INK, 0.08), packetAlpha * 0.92 * LAYER_PACKETS * trafficReveal);
 
 	vec2 scanCenter = vec2(
 		mix(-aspect * 0.24, aspect * 0.24, seededHash(vec2(0.0), 601.0)),
@@ -239,7 +239,7 @@ void main() {
 	);
 	float scanRadius = fract(uTime * 0.028 + seededHash(vec2(0.0), 613.0)) * (aspect * 0.78 + 0.4);
 	float scan = smoothstep(0.085, 0.0, abs(length(point - scanCenter) - scanRadius));
-	color = mix(color, mix(COBALT, INK, 0.30), scan * 0.11 * uLayerScan * trafficReveal);
+	color = mix(color, mix(COBALT, INK, 0.30), scan * 0.11 * LAYER_SCAN * trafficReveal);
 
 	color = applyDither(color, PAPER);
 	gl_FragColor = vec4(color, 1.0);

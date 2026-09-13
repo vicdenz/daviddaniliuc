@@ -49,11 +49,11 @@ a:focus-visible { outline: 2px solid var(--blue); outline-offset: 5px; }
 .page-content:not(.page-content-ready) .reveal {
 	opacity: 0;
 	transform: translate3d(var(--reveal-x), var(--reveal-y), 0);
-	animation: content-reveal var(--content-reveal-duration) var(--content-reveal-easing) calc(var(--loader-fallback-delay) + var(--loader-fade-duration) + 50ms) both;
+	animation: content-failsafe-reveal var(--content-reveal-duration) var(--content-reveal-easing) calc(var(--loader-fallback-delay) + var(--loader-fade-duration) + 50ms) both;
 }
 .page-content:not(.page-content-ready) .section-divider {
 	transform: scaleX(0);
-	animation: section-divider-reveal var(--section-divider-reveal-duration) var(--section-divider-reveal-easing) calc(var(--loader-fallback-delay) + var(--loader-fade-duration) + 50ms) both;
+	animation: section-divider-failsafe-reveal var(--section-divider-reveal-duration) var(--section-divider-reveal-easing) calc(var(--loader-fallback-delay) + var(--loader-fade-duration) + 50ms) both;
 }
 
 .reveal {
@@ -62,6 +62,7 @@ a:focus-visible { outline: 2px solid var(--blue); outline-offset: 5px; }
 	--reveal-offset: 20px;
 	--reveal-x: 0px;
 	--reveal-y: 0px;
+	will-change: opacity, transform;
 	animation: content-reveal var(--reveal-duration) var(--content-reveal-easing) calc(var(--content-reveal-delay) + var(--reveal-delay)) both;
 }
 
@@ -81,6 +82,7 @@ a:focus-visible { outline: 2px solid var(--blue); outline-offset: 5px; }
 .section-divider {
 	transform: scaleX(0);
 	transform-origin: center;
+	will-change: transform;
 	animation: section-divider-reveal var(--section-divider-reveal-duration) var(--section-divider-reveal-easing) var(--section-divider-delay) both;
 }
 
@@ -99,7 +101,22 @@ a:focus-visible { outline: 2px solid var(--blue); outline-offset: 5px; }
 	}
 }
 
+@keyframes content-failsafe-reveal {
+	from {
+		opacity: 0;
+		transform: translate3d(var(--reveal-x), var(--reveal-y), 0);
+	}
+	to {
+		opacity: 1;
+		transform: translate3d(0, 0, 0);
+	}
+}
+
 @keyframes section-divider-reveal {
+	to { transform: scaleX(1); }
+}
+
+@keyframes section-divider-failsafe-reveal {
 	to { transform: scaleX(1); }
 }
 
@@ -108,10 +125,10 @@ a:focus-visible { outline: 2px solid var(--blue); outline-offset: 5px; }
 	.reveal { animation: none; }
 	.section-divider { animation: none; transform: none; }
 	.page-content:not(.page-content-ready) .reveal {
-		animation: content-reveal 1ms linear calc(var(--loader-fallback-delay) + 1ms) both;
+		animation: content-failsafe-reveal 1ms linear calc(var(--loader-fallback-delay) + 1ms) both;
 	}
 	.page-content:not(.page-content-ready) .section-divider {
-		animation: section-divider-reveal 1ms linear calc(var(--loader-fallback-delay) + 1ms) both;
+		animation: section-divider-failsafe-reveal 1ms linear calc(var(--loader-fallback-delay) + 1ms) both;
 	}
 	.page-loader { transition: none; animation-duration: 1ms; animation-timing-function: linear; }
 	.topographic-backdrop { transition: none; }
