@@ -92,17 +92,26 @@ export function BackdropScene({ reduceMotion, reveal, onReady }: BackdropScenePr
 
 		const active = !reduceMotion && reveal;
 		const activity = active ? Math.min(Math.abs(scrollDelta) / BACKDROP_ANIMATION.scrollDistanceForMaxBoost, 1) : 0;
+		let targetNoiseRate = 1;
 		if (!active) {
 			state.noiseRate = state.returnStartRate = 1;
 			state.returnElapsed = BACKDROP_ANIMATION.scrollReturnDuration;
 		} else if (activity > 0) {
-			state.noiseRate = Math.sign(scrollDelta) * (1 + (BACKDROP_ANIMATION.maxScrollSpeed - 1) * activity);
-			state.returnStartRate = state.noiseRate;
+			targetNoiseRate = Math.sign(scrollDelta) * (1 + (BACKDROP_ANIMATION.maxScrollSpeed - 1) * activity);
+			state.returnStartRate = targetNoiseRate;
 			state.returnElapsed = 0;
 		} else {
 			state.returnElapsed = Math.min(state.returnElapsed + frameDelta, BACKDROP_ANIMATION.scrollReturnDuration);
 			const progress = state.returnElapsed / BACKDROP_ANIMATION.scrollReturnDuration;
-			state.noiseRate = MathUtils.lerp(state.returnStartRate, 1, 1 - (1 - progress) ** 3);
+			targetNoiseRate = MathUtils.lerp(state.returnStartRate, 1, 1 - (1 - progress) ** 3);
+		}
+		if (active) {
+			state.noiseRate = MathUtils.damp(
+				state.noiseRate,
+				targetNoiseRate,
+				BACKDROP_ANIMATION.scrollResponseSmoothing,
+				frameDelta,
+			);
 		}
 		if (active) {
 			state.sceneTime += frameDelta;

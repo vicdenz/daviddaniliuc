@@ -10,6 +10,8 @@ type NameUnderlineProps = {
 	children: ReactNode;
 };
 
+const getUnderlineOffset = (element: HTMLElement) => -0.12 * Number.parseFloat(getComputedStyle(element).fontSize);
+
 export default function NameUnderline({ children }: NameUnderlineProps) {
 	const nameRef = useRef<HTMLSpanElement>(null);
 	const pageReady = usePageReady();
@@ -25,7 +27,7 @@ export default function NameUnderline({ children }: NameUnderlineProps) {
 			if (resizeFrame !== null) window.cancelAnimationFrame(resizeFrame);
 			resizeFrame = window.requestAnimationFrame(() => {
 				resizeFrame = null;
-				annotation?.show();
+				if (annotation) annotation.padding = [0, 0, getUnderlineOffset(element), 0];
 			});
 		};
 
@@ -35,7 +37,7 @@ export default function NameUnderline({ children }: NameUnderlineProps) {
 				type: "underline",
 				color: "#2457d6",
 				strokeWidth: 3,
-				padding: [0, 0, -1, 0],
+				padding: [0, 0, getUnderlineOffset(element), 0],
 				iterations: 1,
 				multiline: true,
 				animate: !reduceMotion,

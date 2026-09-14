@@ -1,6 +1,6 @@
 export const SITE_ANIMATION = {
 	loaderFallbackMs: 4000,
-	loaderFadeMs: 80,
+	loaderFadeMs: 60,
 	loaderFadeEasing: "ease-in",
 	backdropFadeMs: 960,
 	backdropFadeEasing: "cubic-bezier(0.16, 1, 0.3, 1)",
@@ -30,4 +30,5 @@ export const BACKDROP_ANIMATION = {
 	baseNoiseSpeed: 1.6,
 	maxScrollSpeed: 12,
 	scrollReturnDuration: 2.1,
+	scrollResponseSmoothing: 10,
 } as const;
