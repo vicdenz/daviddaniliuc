@@ -1,4 +1,8 @@
 import type { Metadata } from "next";
+
+import PageCanvas from "@/components/PageCanvas";
+import SiteFooter from "@/components/SiteFooter";
+
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,7 +20,12 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<body>{children}</body>
+			<body>
+				<PageCanvas>
+					{children}
+					<SiteFooter />
+				</PageCanvas>
+			</body>
 		</html>
 	);
 }

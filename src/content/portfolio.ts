@@ -1,7 +1,7 @@
 export type OrganizationEntry = {
 	period?: string;
 	organization: string;
-	role: string;
+	role?: string;
 	description: string;
 	logo: string;
 	logoScale?: number;
@@ -9,7 +9,6 @@ export type OrganizationEntry = {
 };
 
 export type Project = {
-	category: string;
 	title: string;
 	stack: string;
 	description: string;
@@ -22,7 +21,7 @@ export const experiences = [
 		period: "May — Aug 2026",
 		organization: "Shopify",
 		role: "Software Engineer Intern",
-		description: "Monorepo CI migration, self-healing merge queues, build-time and compute optimization, race-condition detection.",
+		description: "Organization-wide migration toward internally built developer tooling, performance tuning for Shopify’s Git service, automated merge-queue recovery.",
 		logo: "/logos/shopify.svg",
 		href: "https://www.shopify.com/",
 	},
@@ -30,16 +29,25 @@ export const experiences = [
 		period: "Jan — Apr 2026",
 		organization: "UTMIST",
 		role: "Software Engineer",
-		description: "Multi-tenant MCP gateway, AWS ECS Fargate, encrypted OAuth, dynamic Google Workspace and Slack tool discovery.",
+		description: "Multi-tenant MCP gateway for enterprise AI agents, dynamic tool discovery, encrypted OAuth, and AWS Fargate deployment.",
 		logo: "/logos/utmist.svg",
 		href: "https://www.utmist.ca/",
+	},
+	{
+		period: "Sep 2025 — Apr 2026",
+		organization: "aUToronto",
+		role: "Software Engineer",
+		description: "Human-machine interface for a GM/SAE autonomous vehicle, ROS navigation guidance, real-time LiDAR, camera and telemetry visualization.",
+		logo: "/logos/autoronto-mark.webp",
+		logoScale: 1.16,
+		href: "https://www.autodrive.utoronto.ca/",
 	},
 	{
 		period: "May — Aug 2025",
 		organization: "MPAC",
 		role: "Software Engineer Intern",
-		description: "AWS cost optimization, Kubernetes at municipal scale, 100GB+ PostgreSQL cross-cloud migration.",
-		logo: "/logos/mpac-mark.png",
+		description: "Kubernetes infrastructure for municipal staff across Ontario, AWS cost optimization, 100GB+ PostgreSQL migration from AWS to Azure.",
+		logo: "/logos/mpac-mark.svg",
 		logoScale: 1.16,
 		href: "https://www.mpac.ca/",
 	},
@@ -47,9 +55,9 @@ export const experiences = [
 
 export const education = [
 	{
+		period: "Expected Aug 2028",
 		organization: "University of Toronto",
-		role: "Computer Science & Mathematics",
-		description: "Studying computer science and mathematics.",
+		description: "Pursuing Computer Science Specialist and Mathematics Major.",
 		logo: "/logos/university-of-toronto-crest.png",
 		logoScale: 1.16,
 		href: "https://www.utoronto.ca/",
@@ -58,19 +66,17 @@ export const education = [
 
 export const projects = [
 	{
-		category: "Learning tools",
 		title: "StudyUp",
-		stack: "React · TypeScript · Supabase · Gemini",
-		description: "StudyUp is an AI study copilot for grounded tutoring and personalized study plans, built in eight hours and winner of the Lovable × Roam international hackathon and a US$10,000 prize.",
+		stack: "React · TypeScript · Supabase · Gemini · Vite",
+		description: "AI workspace for context-aware tutoring, personalized study plans; built in under eight hours, won first place and $10,000 USD prize at the Lovable x UTMIST International Hackathon, invited to San Francisco to showcase",
 		href: "https://study-up-pi.vercel.app/",
 		repo: "https://github.com/vicdenz/study-up",
 	},
 	{
-		category: "Financial systems",
 		title: "Indus",
-		stack: "Rails · Rust · Kafka · Temporal · AWS",
-		description: "Indus is a live market-research and portfolio workspace that turns real-time data into sharper investing decisions.",
+		stack: "React · TypeScript · Rails · Rust · Kafka · PostgreSQL · AWS · Terraform · Helm",
+		description: "Financial intelligence platform for live market research, portfolio tracking, streaming charts, and AI-powered reports.",
 		href: "https://indus-trade.vercel.app/",
-		repo: "https://github.com/vicdenz/indus",
+		repo: "https://github.com/TryIndus/indus",
 	},
 ] satisfies readonly Project[];

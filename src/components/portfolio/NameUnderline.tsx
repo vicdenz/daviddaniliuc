@@ -22,7 +22,7 @@ export default function NameUnderline({ children }: NameUnderlineProps) {
 		let annotation: ReturnType<typeof annotate> | null = null;
 		const nameIsSelected = () => {
 			const selection = window.getSelection();
-			return Boolean(selection?.rangeCount && selection.getRangeAt(0).intersectsNode(element));
+			return Boolean(selection && !selection.isCollapsed && selection.rangeCount && selection.getRangeAt(0).intersectsNode(element));
 		};
 		const syncSelectionColor = () => {
 			if (annotation) annotation.color = nameIsSelected() ? "#faf8f0" : "#2457d6";
@@ -43,7 +43,7 @@ export default function NameUnderline({ children }: NameUnderlineProps) {
 				type: "underline",
 				color: nameIsSelected() ? "#faf8f0" : "#2457d6",
 				strokeWidth: 3,
-				padding: 1,
+				padding: [0, 0, -1, 0],
 				iterations: 1,
 				multiline: true,
 				animate: !reduceMotion,

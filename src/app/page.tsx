@@ -1,10 +1,5 @@
-import PageCanvas from "@/components/PageCanvas";
-import Journal from "@/components/journal/Journal";
+import Portfolio from "@/components/portfolio/Portfolio";
 
 export default function Home() {
-	return (
-		<PageCanvas>
-			<Journal />
-		</PageCanvas>
-	);
+	return <Portfolio />;
 }
