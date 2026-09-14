@@ -20,13 +20,6 @@ export default function NameUnderline({ children }: NameUnderlineProps) {
 
 		const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 		let annotation: ReturnType<typeof annotate> | null = null;
-		const nameIsSelected = () => {
-			const selection = window.getSelection();
-			return Boolean(selection && !selection.isCollapsed && selection.rangeCount && selection.getRangeAt(0).intersectsNode(element));
-		};
-		const syncSelectionColor = () => {
-			if (annotation) annotation.color = nameIsSelected() ? "#faf8f0" : "#2457d6";
-		};
 		let resizeFrame: number | null = null;
 		const redrawForResize = () => {
 			if (resizeFrame !== null) window.cancelAnimationFrame(resizeFrame);
@@ -36,12 +29,11 @@ export default function NameUnderline({ children }: NameUnderlineProps) {
 			});
 		};
 
-		document.addEventListener("selectionchange", syncSelectionColor);
 		window.addEventListener("resize", redrawForResize, { passive: true });
 		const delay = window.setTimeout(() => {
 			annotation = annotate(element, {
 				type: "underline",
-				color: nameIsSelected() ? "#faf8f0" : "#2457d6",
+				color: "#2457d6",
 				strokeWidth: 3,
 				padding: [0, 0, -1, 0],
 				iterations: 1,
@@ -54,7 +46,6 @@ export default function NameUnderline({ children }: NameUnderlineProps) {
 
 		return () => {
 			window.clearTimeout(delay);
-			document.removeEventListener("selectionchange", syncSelectionColor);
 			window.removeEventListener("resize", redrawForResize);
 			if (resizeFrame !== null) window.cancelAnimationFrame(resizeFrame);
 			annotation?.remove();
