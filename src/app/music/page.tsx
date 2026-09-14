@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useRef, useState, type CSSProperties } from "react";
+import { useRef, useState, type CSSProperties } from "react";
 
 import { musicTracks } from "@/content/music";
 
@@ -29,40 +29,67 @@ function PlayerIcon({ name }: { name: PlayerIconName }) {
 
 export default function MusicPage() {
 	const audioRef = useRef<HTMLAudioElement>(null);
-	const playWhenReady = useRef(false);
+	const pendingPlayback = useRef(false);
 	const [activeTrack, setActiveTrack] = useState(0);
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [autoplay, setAutoplay] = useState(true);
+	const [playbackError, setPlaybackError] = useState(false);
 	const [currentTime, setCurrentTime] = useState(0);
 	const [duration, setDuration] = useState(musicTracks[0].durationSeconds);
+	const track = musicTracks[activeTrack];
 
-	const playTrack = useCallback((index: number, playOnLoad = false) => {
+	const requestPlayback = (audio: HTMLAudioElement) => {
+		setPlaybackError(false);
+		void audio.play().catch((error: unknown) => {
+			if (error instanceof DOMException && error.name === "AbortError") return;
+			setIsPlaying(false);
+			setPlaybackError(true);
+		});
+	};
+	const selectTrack = (index: number, shouldPlay?: boolean) => {
 		const audio = audioRef.current;
 		if (!audio) return;
+		const cancelPendingPlayback = pendingPlayback.current && shouldPlay === undefined;
+		// Normal track changes preserve whether the current track is playing.
+		const continuePlayback = shouldPlay ?? !audio.paused;
+
 		if (index !== activeTrack) {
-			playWhenReady.current = playOnLoad;
+			pendingPlayback.current = cancelPendingPlayback ? false : continuePlayback;
 			audio.pause();
+			if (!pendingPlayback.current) setIsPlaying(false);
+			setPlaybackError(false);
 			setActiveTrack(index);
 			setDuration(musicTracks[index].durationSeconds);
 			setCurrentTime(0);
 			return;
 		}
-		void audio.play().catch(() => setIsPlaying(false));
-	}, [activeTrack]);
+		if (cancelPendingPlayback) {
+			pendingPlayback.current = false;
+			audio.pause();
+			setIsPlaying(false);
+			return;
+		}
+		requestPlayback(audio);
+	};
 
-	const moveTrack = useCallback((step: number) => {
+	const moveTrack = (step: number) => {
 		const nextTrack = activeTrack + step;
 		if (nextTrack < 0 || nextTrack >= musicTracks.length) return;
-		playTrack(nextTrack);
-	}, [activeTrack, playTrack]);
-	const handleTrackEnd = useCallback(() => {
-		if (autoplay && activeTrack < musicTracks.length - 1) playTrack(activeTrack + 1, true);
-	}, [activeTrack, autoplay, playTrack]);
+		selectTrack(nextTrack);
+	};
+	const handleTrackEnd = () => {
+		if (autoplay && activeTrack < musicTracks.length - 1) selectTrack(activeTrack + 1, true);
+	};
 
 	const togglePlayback = () => {
 		const audio = audioRef.current;
 		if (!audio) return;
-		if (audio.paused) void audio.play().catch(() => setIsPlaying(false));
+		if (pendingPlayback.current) {
+			pendingPlayback.current = false;
+			setIsPlaying(false);
+			return;
+		}
+		if (audio.paused) requestPlayback(audio);
 		else audio.pause();
 	};
 
@@ -71,10 +98,15 @@ export default function MusicPage() {
 	const syncDuration = (audio: HTMLAudioElement) => {
 		if (Number.isFinite(audio.duration) && audio.duration > 0) setDuration(audio.duration);
 	};
-	const playLoadedTrack = (audio: HTMLAudioElement) => {
-		if (!playWhenReady.current) return;
-		playWhenReady.current = false;
-		void audio.play().catch(() => setIsPlaying(false));
+	const playPendingTrack = (audio: HTMLAudioElement) => {
+		if (!pendingPlayback.current) return;
+		pendingPlayback.current = false;
+		requestPlayback(audio);
+	};
+	const handlePlaybackError = () => {
+		pendingPlayback.current = false;
+		setIsPlaying(false);
+		setPlaybackError(true);
 	};
 	const seek = (nextTime: number) => {
 		const audio = audioRef.current;
@@ -94,25 +126,31 @@ export default function MusicPage() {
 			<section className={`${styles.player} reveal reveal-from-right reveal-offset-24 reveal-100`} aria-label="Music player">
 				<audio
 					ref={audioRef}
-					src={musicTracks[activeTrack].source}
+					src={track.source}
 					preload="metadata"
 					onLoadedMetadata={(event) => {
 						syncDuration(event.currentTarget);
-						playLoadedTrack(event.currentTarget);
+						playPendingTrack(event.currentTarget);
 					}}
-					onCanPlay={(event) => playLoadedTrack(event.currentTarget)}
+					onCanPlay={(event) => playPendingTrack(event.currentTarget)}
 					onDurationChange={(event) => syncDuration(event.currentTarget)}
 					onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
 					onSeeked={(event) => setCurrentTime(event.currentTarget.currentTime)}
-					onPlay={() => setIsPlaying(true)}
-					onPause={() => setIsPlaying(false)}
+					onPlay={() => {
+						setIsPlaying(true);
+						setPlaybackError(false);
+					}}
+					onPause={() => {
+						if (!pendingPlayback.current) setIsPlaying(false);
+					}}
 					onEnded={handleTrackEnd}
+					onError={handlePlaybackError}
 				/>
 
 				<div className={styles.readout} aria-live="polite">
 					<div>
 						<p className={styles.readoutLabel}>now playing</p>
-						<p className={styles.readoutTitle}>{musicTracks[activeTrack].title}</p>
+						<p className={styles.readoutTitle}>{track.title}</p>
 					</div>
 					<p className={styles.time}>{formatTime(currentTime)} / {formatTime(duration, true)}</p>
 				</div>
@@ -136,13 +174,16 @@ export default function MusicPage() {
 						onChange={(event) => seek(event.currentTarget.valueAsNumber)}
 					/>
 				</label>
-				<button className={styles.autoplayToggle} type="button" onClick={() => setAutoplay((enabled) => !enabled)} aria-pressed={autoplay}>
-					<span className={styles.autoplayState} aria-hidden="true">{autoplay ? "✓" : "×"}</span>
-					<span>autoplay</span>
-				</button>
+				<div className={styles.playbackStatus}>
+					<button className={styles.autoplayToggle} type="button" onClick={() => setAutoplay((enabled) => !enabled)} aria-pressed={autoplay}>
+						<span className={styles.autoplayState} aria-hidden="true">{autoplay ? "✓" : "×"}</span>
+						<span>autoplay</span>
+					</button>
+					{playbackError && <span className={styles.playbackError} role="alert">an error occurred</span>}
+				</div>
 			</section>
 
-			<section className={`${styles.archive} reveal reveal-from-left reveal-offset-24 reveal-200`} aria-labelledby="track-list-title">
+			<section className="reveal reveal-from-left reveal-offset-24 reveal-200" aria-labelledby="track-list-title">
 				<div className={styles.archiveHeading}>
 					<h2 id="track-list-title">Tracks</h2>
 					<span>{musicTracks.length.toString().padStart(2, "0")} songs</span>
@@ -151,7 +192,7 @@ export default function MusicPage() {
 					{musicTracks.map((track, index) => (
 						<li className={index === activeTrack ? styles.activeTrack : undefined} key={track.title}>
 							<span className={styles.trackNumber}>{(index + 1).toString().padStart(2, "0")}</span>
-							<button type="button" onClick={() => playTrack(index)} aria-label={index === activeTrack ? `Play ${track.title}` : `Select ${track.title}`}>
+							<button type="button" onClick={() => selectTrack(index)} aria-label={index === activeTrack ? `Play ${track.title}` : `Select ${track.title}`}>
 								<span className={styles.trackTitle}>{track.title}{track.wip && <span className={styles.trackWip}>[WIP]</span>}</span>
 							</button>
 						</li>

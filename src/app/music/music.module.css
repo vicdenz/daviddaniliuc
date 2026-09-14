@@ -1,6 +1,7 @@
 .music {
 	--music-ink: #05090d;
 	--music-muted: #465565;
+	--music-error: #a13f38;
 	width: min(calc(100% - 24px), 960px);
 	min-height: calc(100vh - 24px);
 	margin: clamp(56px, 8vh, 82px) auto 12px;
@@ -73,11 +74,13 @@
 .progress input::-moz-range-thumb { width: 10px; height: 22px; border: 0; border-radius: 0; background: var(--music-ink); }
 .progress input:disabled { cursor: wait; opacity: 0.55; }
 .progress input:focus-visible { outline: 2px solid var(--blue); outline-offset: 4px; }
-.autoplayToggle { position: relative; display: inline-flex; align-items: center; gap: 4px; margin: 9px 0 0; padding: 0 0 2px; border: 0; background: transparent; color: var(--blue); font: inherit; font-size: 13px; font-weight: 650; letter-spacing: 0.02em; cursor: pointer; transition: transform 140ms ease-in; }
+.playbackStatus { display: flex; align-items: baseline; gap: 10px; margin-top: 9px; }
+.autoplayToggle { position: relative; display: inline-flex; align-items: center; gap: 4px; margin: 0; padding: 0 0 2px; border: 0; background: transparent; color: var(--blue); font: inherit; font-size: 13px; font-weight: 650; letter-spacing: 0.02em; cursor: pointer; transition: transform 140ms ease-in; }
 .autoplayToggle::after { position: absolute; right: 0; bottom: 0; left: 0; height: 2px; background: currentColor; content: ""; }
 .autoplayToggle:hover { transform: translateY(-1px); }
 .autoplayState { display: inline-grid; width: 1em; place-items: center; }
 .autoplayToggle:focus-visible { outline: 2px solid var(--blue); outline-offset: 4px; }
+.playbackError { color: var(--music-error); font-size: 13px; font-weight: 600; }
 
 .archiveHeading { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px; }
 .archiveHeading h2 { margin: 0; font-size: clamp(25px, 3.2vw, 32px); font-weight: 700; letter-spacing: -0.045em; line-height: 1.1; }

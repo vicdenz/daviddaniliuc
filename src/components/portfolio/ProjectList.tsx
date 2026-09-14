@@ -2,6 +2,7 @@ import type { Project } from "@/content/portfolio";
 import LinkIcon from "@/components/LinkIcon";
 
 import styles from "./Portfolio.module.css";
+import TechStack from "./TechStack";
 
 type ProjectListProps = {
 	projects: readonly Project[];
@@ -20,7 +21,7 @@ export default function ProjectList({ projects }: ProjectListProps) {
 								<a href={project.repo} target="_blank" rel="noreferrer"><LinkIcon name="github" />Source</a>
 							</div>
 						</div>
-						<p className={styles.projectStack}>{project.stack}</p>
+						<TechStack technologies={project.stack} />
 						<p>{project.description}</p>
 					</div>
 				</article>

@@ -10,7 +10,7 @@ export type OrganizationEntry = {
 
 export type Project = {
 	title: string;
-	stack: string;
+	stack: readonly string[];
 	description: string;
 	href: string;
 	repo: string;
@@ -67,14 +67,14 @@ export const education = [
 export const projects = [
 	{
 		title: "StudyUp",
-		stack: "React · TypeScript · Supabase · Gemini · Vite",
+		stack: ["React", "TypeScript", "Supabase", "Gemini", "Vite"],
 		description: "AI workspace for context-aware tutoring, personalized study plans; built in under eight hours, won first place and $10,000 USD prize at the Lovable x UTMIST International Hackathon, invited to San Francisco to showcase",
 		href: "https://study-up-pi.vercel.app/",
 		repo: "https://github.com/vicdenz/study-up",
 	},
 	{
 		title: "Indus",
-		stack: "React · TypeScript · Rails · Rust · Kafka · PostgreSQL · AWS · Terraform · Helm",
+		stack: ["React", "TypeScript", "Rails", "Rust", "Kafka", "PostgreSQL", "AWS", "Terraform", "Helm"],
 		description: "Financial intelligence platform for live market research, portfolio tracking, streaming charts, and AI-powered reports.",
 		href: "https://indus-trade.vercel.app/",
 		repo: "https://github.com/TryIndus/indus",

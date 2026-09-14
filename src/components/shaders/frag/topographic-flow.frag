@@ -162,8 +162,13 @@ float routeHeight(float routeId, float x, float time) {
 }
 
 void main() {
-	float aspect = max(uAspect, 1.0);
-	vec2 point = vec2((vUv.x - 0.5) * aspect, vUv.y - 0.5);
+	float viewportAspect = max(uAspect, 0.001);
+	vec2 viewportScale = viewportAspect >= 1.0
+		? vec2(viewportAspect, 1.0)
+		: vec2(1.0, 1.0 / viewportAspect);
+	float horizontalExtent = viewportScale.x;
+	float sceneExtent = max(viewportScale.x, viewportScale.y);
+	vec2 point = (vUv - 0.5) * viewportScale;
 	vec2 drift = vec2(uNoiseTime * 0.014, -uNoiseTime * 0.009);
 	float revealNoise = fbm(point * 1.45, 673.0);
 	float revealOrder = clamp(length(vUv - 0.5) * 1.28 + (revealNoise - 0.5) * 0.26, 0.0, 0.90);
@@ -219,7 +224,7 @@ void main() {
 
 		float speed = mix(0.035, 0.065, seededHash(vec2(routeId), 547.0));
 		float progress = fract(uTime * speed + seededHash(vec2(routeId), 563.0));
-		float packetX = mix(-aspect * 0.58, aspect * 0.58, progress);
+		float packetX = mix(-horizontalExtent * 0.58, horizontalExtent * 0.58, progress);
 		float packetY = routeHeight(routeId, packetX, uTime);
 		float portalScale = smoothstep(0.01, 0.10, progress) * (1.0 - smoothstep(0.88, 0.99, progress));
 		if (portalScale > 0.01) {
@@ -234,10 +239,10 @@ void main() {
 	color = mix(color, mix(COBALT, INK, 0.08), packetAlpha * 0.92 * LAYER_PACKETS * trafficReveal);
 
 	vec2 scanCenter = vec2(
-		mix(-aspect * 0.24, aspect * 0.24, seededHash(vec2(0.0), 601.0)),
+		mix(-horizontalExtent * 0.24, horizontalExtent * 0.24, seededHash(vec2(0.0), 601.0)),
 		mix(-0.18, 0.18, seededHash(vec2(0.0), 607.0))
 	);
-	float scanRadius = fract(uTime * 0.028 + seededHash(vec2(0.0), 613.0)) * (aspect * 0.78 + 0.4);
+	float scanRadius = fract(uTime * 0.028 + seededHash(vec2(0.0), 613.0)) * (sceneExtent * 0.78 + 0.4);
 	float scan = smoothstep(0.085, 0.0, abs(length(point - scanCenter) - scanRadius));
 	color = mix(color, mix(COBALT, INK, 0.30), scan * 0.11 * LAYER_SCAN * trafficReveal);
 
