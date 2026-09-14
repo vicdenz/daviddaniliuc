@@ -46,7 +46,7 @@ export const experiences = [
 		period: "May — Aug 2025",
 		organization: "MPAC",
 		role: "Software Engineer Intern",
-		description: "Kubernetes infrastructure for municipal staff across Ontario, AWS cost optimization, 100GB+ PostgreSQL migration from AWS to Azure.",
+		description: "Kubernetes infrastructure for municipal staff across Ontario, AWS cost optimization, 100GB+ PostgreSQL DB migration.",
 		logo: "/logos/mpac-mark.svg",
 		logoScale: 1.16,
 		href: "https://www.mpac.ca/",
