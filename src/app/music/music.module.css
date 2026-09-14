@@ -102,9 +102,9 @@
 		width: min(calc(100% - 10px), 960px);
 		min-height: calc(100vh - 10px);
 		margin: 24px auto 5px;
-		padding: 20px 12px 42px calc(12px + 58px);
+		padding: 20px 12px 42px;
 	}
-	.header { align-items: flex-start; margin-bottom: 52px; }
+	.header { margin-bottom: 52px; }
 	.header h1 { font-size: clamp(48px, 16vw, 66px); }
 	.readout { align-items: flex-start; flex-direction: column; gap: 9px; }
 	.transport button { width: 42px; }
