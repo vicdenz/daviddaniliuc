@@ -1,9 +1,21 @@
-import { stat } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 
-const audioFiles = ["kawartha_echos.mp3", "cant_you_see_v1.mp3"];
+const tracks = JSON.parse(await readFile(new URL("../private/audio/tracks.json", import.meta.url), "utf8"));
+if (!Array.isArray(tracks) || tracks.length === 0) throw new Error("Track manifest must contain at least one track.");
+const ids = new Set();
+for (const track of tracks) {
+	if (!track || typeof track.id !== "string" || !/^[a-z0-9_-]+$/.test(track.id)
+		|| track.id === "session" || ids.has(track.id) || typeof track.title !== "string" || !track.title.trim()
+		|| typeof track.filename !== "string" || !/^[a-zA-Z0-9_-]+\.mp3$/.test(track.filename)
+		|| !Number.isFinite(track.durationSeconds) || track.durationSeconds <= 0
+		|| (track.wip !== undefined && typeof track.wip !== "boolean")) {
+		throw new Error("Invalid track manifest: use unique IDs (excluding session), safe MP3 filenames, titles and positive durations.");
+	}
+	ids.add(track.id);
+}
 let missing = false;
 
-for (const filename of audioFiles) {
+for (const { filename } of tracks) {
 	const file = new URL(`../private/audio/${filename}`, import.meta.url);
 	try {
 		const info = await stat(file);

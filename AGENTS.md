@@ -5,11 +5,11 @@ Small personal site built with Next.js, React, TypeScript, Three.js, and React T
 ## Useful places
 
 - `/` — portfolio; content is in `src/content/portfolio.ts`
-- `/music` — music player; tracks are in `src/content/music.ts`
+- `/music` — music player; track metadata is in `private/audio/tracks.json`
 - `src/app/globals.css` — shared tokens, shell, and global interaction styles
 - `src/components/PageCanvas.tsx` — shared loader and backdrop
 - `src/components/portfolio/` — portfolio UI
-- `private/audio/` — local, Git-ignored MP3s uploaded by the Vercel CLI and bundled into the audio streaming function
+- `private/audio/` — tracked `tracks.json` manifest and local, Git-ignored MP3s uploaded by the Vercel CLI
 - `public/logos/` — local logo assets
 
 ## Commands
@@ -29,16 +29,19 @@ Small personal site built with Next.js, React, TypeScript, Three.js, and React T
 - Deploy from this local checkout using the Vercel CLI. `vercel.json` disables automatic Git deployments because GitHub builds do not have the ignored MP3s. Merging into `main` alone does not publish the site.
 - First-time setup: run `npx --yes vercel@59.17.0 login`, then `npx --yes vercel@59.17.0 link` and select the existing `daviddaniliuc` project under `david-daniliucs-projects`. Do not create a new project. `.vercel/` stays local and ignored.
 - Configure `AUDIO_SESSION_SECRET` in the existing project's Preview and Production environments before deploying. Local `.env` files are excluded from uploads.
-- After merging, switch to `main`, restore `private/audio/kawartha_echos.mp3` and `private/audio/cant_you_see_v1.mp3` from a local backup if needed, and run `npm run deploy:prod`. Keep a separate backup: fresh Git clones do not contain the audio, and branch switches can remove previously tracked versions.
-- `.vercelignore` explicitly allows deployment inputs, including `private/audio/*.mp3`, independently of `.gitignore`. `outputFileTracingIncludes` then packages those MP3s into the function. Keep the upload allowlist current when adding build inputs.
+- After merging, switch to `main`, restore the MP3s listed in `private/audio/tracks.json` from a local backup if needed, and run `npm run deploy:prod`. Keep a separate backup: fresh Git clones do not contain the audio, and branch switches can remove previously tracked versions.
+- `.vercelignore` explicitly allows deployment inputs, including `private/audio/tracks.json` and `private/audio/*.mp3`, independently of `.gitignore`. `outputFileTracingIncludes` then packages the MP3s into the function. Keep the upload allowlist current when adding build inputs.
 - Builds and deployment scripts check for missing or empty required tracks before proceeding. Stop the dev server before a local production build. The CLI runs the deployment build on Vercel.
 - Keep all technical setup in this file; the README is a short description of the website.
 
 ## Audio streaming
 
+- `private/audio/tracks.json` is the single source for IDs, titles, filenames, WIP status and durations. Edit it when adding tracks, and place the corresponding MP3s beside it. IDs must be unique; `session` is reserved. The JSON is tracked; MP3s are ignored.
+- `src/lib/music.ts` loads the manifest for the streaming endpoint and server-rendered music page. `MusicPlayer.tsx` receives only display metadata and generated playback URLs, not filenames or the raw manifest. `scripts/check_audio.mjs` reads and validates the same JSON before checking local files. Do not add separate hard-coded track lists.
+
 - `/api/audio/[trackId]` streams allowlisted tracks from `private/audio` using the Node.js runtime. `outputFileTracingIncludes` bundles the MP3s into the function.
 - Set `AUDIO_SESSION_SECRET` to a random value of at least 32 characters in Vercel Preview and Production, then redeploy. Generate one with `openssl rand -hex 32`. Production playback fails closed without it; development has a local-only fallback.
-- Visiting `/music`, including route prefetches, issues an HttpOnly, SameSite=Strict signed cookie scoped to `/api/audio`. Sessions last one hour and renew on authorized audio requests. Revisit `/music` after an hour without audio requests.
+- Visiting `/music`, including route prefetches, issues an HttpOnly, SameSite=Strict signed cookie scoped to `/api/audio`. Sessions last one hour and renew on authorized audio requests. The player also POSTs to `/api/audio/session` on mount, every 30 minutes while visible, and when the tab becomes visible. This handles cached navigation and idle tabs. Playback waits for the first session response. The session endpoint requires a same-origin POST.
 - GET and HEAD support single byte ranges for seeking. Invalid ranges return 416; missing or invalid sessions return 403. Responses use `private, no-store` caching.
 - Listening remains public, and visitors can capture streamed bytes. Audio is no longer tracked in new commits, but copies remain in existing Git history; older deployments may retain public audio URLs. Do not force-add MP3s or rewrite history without an explicit request.
 - No separate storage service is required. Streaming consumes Vercel function and transfer allowances.

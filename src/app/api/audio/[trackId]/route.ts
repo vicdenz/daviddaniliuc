@@ -4,16 +4,13 @@ import path from "node:path";
 import { Readable } from "node:stream";
 import { NextRequest, NextResponse } from "next/server";
 import { parseAudioRange } from "@/lib/audio-range";
+import { audioTracks } from "@/lib/music";
 import { audioCookieName, audioCookieOptions, createAudioSession, verifyAudioSession } from "@/lib/audio-session";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
-const files: Record<string, string> = {
-	kawartha_echoes: "kawartha_echos.mp3",
-	cant_you_see_v1: "cant_you_see_v1.mp3",
-};
 const cacheHeaders = { "Cache-Control": "private, no-store", "Vary": "Cookie" };
 
 async function serveAudio(request: NextRequest, context: { params: Promise<{ trackId: string }> }) {
@@ -22,18 +19,21 @@ async function serveAudio(request: NextRequest, context: { params: Promise<{ tra
 		return new NextResponse(null, { status: 403, headers: cacheHeaders });
 	}
 	const { trackId } = await context.params;
-	if (!Object.hasOwn(files, trackId)) {
+	const track = audioTracks.find((track) => track.id === trackId);
+	if (!track) {
 		return new NextResponse(null, { status: 404, headers: cacheHeaders });
 	}
-	const filePath = path.join(process.cwd(), "private", "audio", files[trackId]);
+	const filePath = path.join(process.cwd(), "private", "audio", track.filename);
 	let size: number;
 	try {
-		size = (await stat(filePath)).size;
+		const info = await stat(filePath);
+		if (!info.isFile() || info.size === 0) throw new Error("Empty or invalid audio file");
+		size = info.size;
 	} catch (error) {
 		console.error("Audio file unavailable", trackId, error);
 		return new NextResponse(null, { status: 503, headers: cacheHeaders });
 	}
-	const range = parseAudioRange(request.headers.get("range"), size);
+	const range = parseAudioRange(request.method === "HEAD" ? null : request.headers.get("range"), size);
 	if (!range) {
 		return new NextResponse(null, { status: 416, headers: {
 			...cacheHeaders, "Content-Range": `bytes */${size}`, "Accept-Ranges": "bytes",

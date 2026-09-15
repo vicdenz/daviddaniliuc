@@ -38,7 +38,8 @@ yarn-error.log*
 .vercel
 
 # Local audio is uploaded by the Vercel CLI, not committed to Git.
-/private/audio/
+/private/audio/*
+!/private/audio/tracks.json
 
 # typescript
 *.tsbuildinfo

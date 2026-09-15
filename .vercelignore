@@ -13,11 +13,12 @@
 !/vercel.json
 !/next-env.d.ts
 
-# Only the MP3 assets belong in the private deployment directory.
+# Upload the track manifest and MP3 assets from the private audio directory.
 /private/*
 !/private/audio/
 /private/audio/*
 !/private/audio/*.mp3
+!/private/audio/tracks.json
 
 # Never upload local environment files, including nested ones.
 **/.env*
