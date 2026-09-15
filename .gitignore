@@ -37,6 +37,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# Local audio is uploaded by the Vercel CLI, not committed to Git.
+/private/audio/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
