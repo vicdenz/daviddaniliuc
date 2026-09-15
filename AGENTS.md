@@ -9,7 +9,8 @@ Small personal site built with Next.js, React, TypeScript, Three.js, and React T
 - `src/app/globals.css` — shared tokens, shell, and global interaction styles
 - `src/components/PageCanvas.tsx` — shared loader and backdrop
 - `src/components/portfolio/` — portfolio UI
-- `public/audio/` and `public/logos/` — local media/assets
+- `private/audio/` — server-only MP3s bundled into the audio streaming function
+- `public/logos/` — local logo assets
 
 ## Commands
 
@@ -18,6 +19,16 @@ Small personal site built with Next.js, React, TypeScript, Three.js, and React T
 - `npm run build` — production build; stop the dev server first
 - `npm run sync:resume` — copy the latest resume PDF into `public/resume.pdf`
 - `npm run sync:resume -- --check` — check whether the public PDF is current without changing it
+- `npm run test:audio` — range and session tests; requires Node.js 22.6 or newer
+
+## Audio streaming
+
+- `/api/audio/[trackId]` streams allowlisted tracks from `private/audio` using the Node.js runtime. `outputFileTracingIncludes` bundles the MP3s into the function.
+- Set `AUDIO_SESSION_SECRET` to a random value of at least 32 characters in Vercel Preview and Production, then redeploy. Generate one with `openssl rand -hex 32`. Production playback fails closed without it; development has a local-only fallback.
+- Visiting `/music`, including route prefetches, issues an HttpOnly, SameSite=Strict signed cookie scoped to `/api/audio`. Sessions last one hour and renew on authorized audio requests. Revisit `/music` after an hour without audio requests.
+- GET and HEAD support single byte ranges for seeking. Invalid ranges return 416; missing or invalid sessions return 403. Responses use `private, no-store` caching.
+- Listening remains public, and visitors can capture streamed bytes. Committed audio remains accessible in a public repository and its history; older deployments may retain public audio URLs.
+- No separate storage service is required. Streaming consumes Vercel function and transfer allowances.
 
 ## Resume
 

@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "sync:resume": "bash scripts/sync_resume.sh",
+    "test:audio": "node --experimental-strip-types --test tests/audio.test.mjs",
     "dev": "next dev --port 3000",
     "build": "next build",
     "start": "next start",
