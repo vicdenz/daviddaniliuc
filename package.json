@@ -4,8 +4,12 @@
   "private": true,
   "scripts": {
     "sync:resume": "bash scripts/sync_resume.sh",
+    "test:audio": "node --experimental-strip-types --test tests/audio.test.mjs",
+    "check:audio": "node scripts/check_audio.mjs",
+    "deploy:preview": "npm run check:audio && npx --yes vercel@59.17.0 deploy",
+    "deploy:prod": "npm run check:audio && npx --yes vercel@59.17.0 deploy --prod",
     "dev": "next dev --port 3000",
-    "build": "next build",
+    "build": "npm run check:audio && next build",
     "start": "next start",
     "lint": "eslint ."
   },
