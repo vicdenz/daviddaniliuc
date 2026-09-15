@@ -2,9 +2,13 @@
 # for CLI uploads, so local MP3s are included while secrets stay excluded.
 /*
 !/src/
+!/src/**
 !/public/
+!/public/**
 !/private/
+!/private/**
 !/scripts/
+!/scripts/**
 !/package.json
 !/package-lock.json
 !/next.config.ts
