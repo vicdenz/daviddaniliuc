@@ -16,6 +16,15 @@ Small personal site built with Next.js, React, TypeScript, Three.js, and React T
 - `npm run dev` — local development server
 - `npm run lint` — lint checks
 - `npm run build` — production build; stop the dev server first
+- `npm run sync:resume` — copy the latest resume PDF into `public/resume.pdf`
+- `npm run sync:resume -- --check` — check whether the public PDF is current without changing it
+
+## Resume
+
+- `scripts/sync_resume.sh` copies only `~/Documents/Resumes/David_Daniliuc_resume.pdf` to `public/resume.pdf`, served at `/resume.pdf`.
+- Set `RESUME_SOURCE_PDF` to override the source path. The source PDF and LaTeX files are never modified.
+- Run the sync command after updating the resume, then commit the updated public PDF to include it in the next deployment.
+- Check mode exits with code 1 if the public copy is missing or out of date.
 
 ## Keep it simple
 

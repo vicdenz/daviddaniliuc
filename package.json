@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "sync:resume": "bash scripts/sync_resume.sh",
     "dev": "next dev --port 3000",
     "build": "next build",
     "start": "next start",

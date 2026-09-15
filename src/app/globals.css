@@ -52,6 +52,23 @@ a:focus-visible { outline: 2px solid var(--blue); outline-offset: 5px; }
 }
 .topographic-backdrop-ready { opacity: 1; }
 .page-content { position: relative; z-index: 1; }
+.site-page {
+	width: min(calc(100% - 24px), 960px);
+	min-height: var(--page-min-height, calc(100vh - 24px));
+	margin: clamp(56px, 8vh, 82px) auto 12px;
+	padding: clamp(24px, 3vw, 32px) clamp(18px, 3vw, 30px) var(--page-bottom-padding, 54px) calc(clamp(18px, 3vw, 30px) + 64px);
+	color: #05090d;
+	text-shadow: 0 1px 0 rgba(244, 240, 230, 0.86), 0 0 9px rgba(244, 240, 230, 0.3);
+}
+.site-page-title {
+	margin: 0;
+	font-size: clamp(54px, 8vw, 78px);
+	font-weight: 680;
+	letter-spacing: -0.065em;
+	line-height: 0.9;
+	text-wrap: pretty;
+}
+.not-found-page { --page-min-height: calc(100svh - 180px); }
 .site-footer {
 	--organization-logo-gutter: 64px;
 	display: flex;
@@ -167,6 +184,14 @@ a:focus-visible { outline: 2px solid var(--blue); outline-offset: 5px; }
 }
 
 @media (max-width: 680px) {
+	.site-page {
+		width: min(calc(100% - 10px), 960px);
+		min-height: var(--page-min-height-mobile, calc(100vh - 10px));
+		margin: 24px auto 5px;
+		padding: 20px 12px var(--page-bottom-padding-mobile, 42px);
+	}
+	.site-page-title { font-size: clamp(48px, 16vw, 66px); }
+	.not-found-page { --page-min-height-mobile: calc(100svh - 140px); }
 	.site-footer {
 		--organization-logo-gutter: 0px;
 		align-items: flex-start;

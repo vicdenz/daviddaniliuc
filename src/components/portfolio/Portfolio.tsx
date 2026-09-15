@@ -9,7 +9,7 @@ import SectionDivider from "./SectionDivider";
 
 export default function Portfolio() {
 	return (
-		<main className={styles.portfolio}>
+		<main className={`site-page ${styles.portfolio}`}>
 			<section className={`${styles.introduction} reveal reveal-from-bottom reveal-offset-24 reveal-0`} aria-labelledby="intro-title">
 				<div className={styles.introCopy}>
 					<h1 id="intro-title">I&apos;m <NameUnderline>David Daniliuc</NameUnderline>,<br />a cs student into building systems & making music;</h1>

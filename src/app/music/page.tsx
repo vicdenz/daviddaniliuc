@@ -117,9 +117,9 @@ export default function MusicPage() {
 	};
 
 	return (
-		<main className={styles.music}>
+		<main className={`site-page ${styles.music}`}>
 			<header className={`${styles.header} reveal reveal-from-bottom reveal-offset-24 reveal-0`}>
-				<h1>My music;</h1>
+				<h1 className="site-page-title">My music;</h1>
 				<Link href="/">Back home</Link>
 			</header>
 

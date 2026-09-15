@@ -23,7 +23,7 @@ export default function TopographicBackdrop({ onReady, reveal }: TopographicBack
 
 	return (
 		<div className={`topographic-backdrop${reveal ? " topographic-backdrop-ready" : ""}`} aria-hidden="true">
-			<Canvas orthographic camera={{ position: [0, 0, 10], zoom: 1 }} dpr={[1, 1.5]} frameloop="demand" gl={{ alpha: false, antialias: false, depth: false, stencil: false, powerPreference: "high-performance" }} onCreated={({ gl }) => gl.setClearColor("#faf8f0", 1)}>
+			<Canvas orthographic camera={{ position: [0, 0, 10], zoom: 1 }} dpr={[1, 2]} frameloop="demand" gl={{ alpha: false, antialias: false, depth: false, stencil: false, powerPreference: "high-performance" }} onCreated={({ gl }) => gl.setClearColor("#faf8f0", 1)}>
 				<RenderScheduler reduceMotion={reduceMotion} reveal={reveal} />
 				<BackdropScene reduceMotion={reduceMotion} reveal={reveal} onReady={onReady} />
 			</Canvas>

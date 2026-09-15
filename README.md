@@ -1,23 +1,5 @@
 # David Daniliuc
 
-David's single-page portfolio, built with Next.js, React, TypeScript, React Three Fiber, and a single-plane procedural topographic backdrop.
+Welcome to my personal ~~world~~ website — a place to host the things I'm most proud of.
 
-## Development
-
-```bash
-npm install
-npm run dev
-```
-
-Use `npm run lint` for linting and `npm run build` for a production build.
-
-## Where to edit
-
-- `src/content/portfolio.ts` — experience and project content
-- `src/components/journal/Journal.tsx` — page-level journal structure
-- `src/components/journal/ExperienceList.tsx` — experience rendering
-- `src/components/journal/ProjectList.tsx` — project rendering
-- `src/components/journal/Journal.module.css` — journal typography, paper, spacing, and responsive styles
-- `src/components/backdrop/config.ts` — page and backdrop timing
-- `src/components/backdrop/BackdropScene.tsx` — shader plane and animation behavior
-- `src/components/shaders/` — fragment and vertex shaders
+*Please check out my* [music](https://www.daviddaniliuc.com/music) ***especially*;**

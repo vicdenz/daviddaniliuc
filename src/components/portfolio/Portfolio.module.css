@@ -9,12 +9,8 @@
 	--entry-description-size: clamp(15.5px, 1.85vw, 16.9px);
 	--intro-name-size: clamp(50px, 7.2vw, 72px);
 	--intro-copy-size: clamp(44px, 6.3vw, 64px);
-	width: min(calc(100% - 24px), 960px);
-	min-height: calc(100vh - 24px);
-	margin: clamp(56px, 8vh, 82px) auto 12px;
-	padding: clamp(24px, 3vw, 32px) clamp(18px, 3vw, 30px) 22px calc(clamp(18px, 3vw, 30px) + var(--organization-logo-gutter));
-	color: var(--ink);
-	text-shadow: 0 1px 0 rgba(244, 240, 230, 0.86), 0 0 9px rgba(244, 240, 230, 0.3);
+	--page-bottom-padding: 22px;
+	--page-bottom-padding-mobile: 16px;
 }
 
 .introduction, .index { width: 100%; margin-left: 0; }
@@ -70,10 +66,6 @@
 @media (max-width: 680px) {
 	.portfolio {
 		--organization-logo-gutter: 0px;
-		width: min(calc(100% - 10px), 960px);
-		min-height: calc(100vh - 10px);
-		margin: 24px auto 5px;
-		padding: 20px 12px 16px calc(12px + var(--organization-logo-gutter));
 	}
 	.introduction { display: block; margin-bottom: 26px; }
 	.headerLinks { flex-direction: row; justify-content: flex-end; margin: 14px 0 0; }
