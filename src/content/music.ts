@@ -9,13 +9,13 @@ export const musicTracks = [
 	{
 		title: "kawartha_echoes",
 		wip: true,
-		source: "/audio/kawartha_echos.mp3",
+		source: "/api/audio/kawartha_echoes",
 		durationSeconds: 203,
 	},
 	{
 		title: "cant_you_see_v1",
 		wip: true,
-		source: "/audio/cant_you_see_v1.mp3",
+		source: "/api/audio/cant_you_see_v1",
 		durationSeconds: 89,
 	},
 ] satisfies readonly MusicTrack[];
