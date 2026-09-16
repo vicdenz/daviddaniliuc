@@ -1,68 +1,51 @@
 # David Daniliuc — Website
 
-Small personal site built with Next.js, React, TypeScript, Three.js, and React Three Fiber.
+Personal site built with Next.js, React, TypeScript, Three.js, and React Three Fiber.
 
 ## Useful places
 
-- `/` — portfolio; content is in `src/content/portfolio.ts`
-- `/music` — music player; track metadata is in `private/audio/tracks.json`
-- `src/app/globals.css` — shared tokens, shell, and global interaction styles
-- `src/components/PageCanvas.tsx` — shared loader and backdrop
+- `src/content/portfolio.ts` — portfolio facts and links
 - `src/components/portfolio/` — portfolio UI
-- `private/audio/` — tracked `tracks.json` manifest and local, Git-ignored MP3s uploaded by the Vercel CLI
-- `public/logos/` — local logo assets
+- `src/app/music/` — music page and player
+- `private/audio/tracks.json` — track metadata; local MP3s live beside it
+- `src/app/globals.css` — shared styles
+- `src/components/PageCanvas.tsx` — shared loader and backdrop
+- `public/` — public assets, including `resume.pdf` served at `/resume.pdf`
 
 ## Commands
 
-- `npm run dev` — local development server
-- `npm run lint` — lint checks
+- `npm run dev` — localhost on port 3000
+- `npm run lint` — lint
 - `npm run build` — production build; stop the dev server first
-- `npm run sync:resume` — copy the latest resume PDF into `public/resume.pdf`
-- `npm run sync:resume -- --check` — check whether the public PDF is current without changing it
-- `npm run test:audio` — range and session tests; requires Node.js 22.6 or newer
-- `npm run check:audio` — verify the required local MP3s exist and are nonempty
-- `npm run deploy:preview` — upload local source and audio with the pinned Vercel CLI to create a preview
-- `npm run deploy:prod` — upload local source and audio with the pinned Vercel CLI to publish production
+- `npm run test:audio` — range/session tests; requires Node.js 22.6+
+- `npm run check:audio` — validate the manifest and required local MP3s
+- `npm run sync:resume` — update the public resume PDF
+- `npm run sync:resume -- --check` — check without writing; exits 1 if missing or outdated
+- `npm run deploy:preview` / `npm run deploy:prod` — CLI preview/production deployments
 
-## Deployment
+## Deployment and audio
 
-- Deploy from this local checkout using the Vercel CLI. `vercel.json` disables automatic Git deployments because GitHub builds do not have the ignored MP3s. Merging into `main` alone does not publish the site.
-- First-time setup: run `npx --yes vercel@59.17.0 login`, then `npx --yes vercel@59.17.0 link` and select the existing `daviddaniliuc` project under `david-daniliucs-projects`. Do not create a new project. `.vercel/` stays local and ignored.
-- Configure `AUDIO_SESSION_SECRET` in the existing project's Preview and Production environments before deploying. Local `.env` files are excluded from uploads.
-- After merging, switch to `main`, restore the MP3s listed in `private/audio/tracks.json` from a local backup if needed, and run `npm run deploy:prod`. Keep a separate backup: fresh Git clones do not contain the audio, and branch switches can remove previously tracked versions.
-- `.vercelignore` explicitly allows deployment inputs, including `private/audio/tracks.json` and `private/audio/*.mp3`, independently of `.gitignore`. `outputFileTracingIncludes` then packages the MP3s into the function. Keep the upload allowlist current when adding build inputs.
-- Builds and deployment scripts check for missing or empty required tracks before proceeding. Stop the dev server before a local production build. The CLI runs the deployment build on Vercel.
-- Keep all technical setup in this file; the README is a short description of the website.
-
-## Audio streaming
-
-- `private/audio/tracks.json` is the single source for IDs, titles, filenames, WIP status and durations. Edit it when adding tracks, and place the corresponding MP3s beside it. IDs must be unique; `session` is reserved. The JSON is tracked; MP3s are ignored.
-- `src/lib/music.ts` loads the manifest for the streaming endpoint and server-rendered music page. `MusicPlayer.tsx` receives only display metadata and generated playback URLs, not filenames or the raw manifest. `scripts/check_audio.mjs` reads and validates the same JSON before checking local files. Do not add separate hard-coded track lists.
-
-- `/api/audio/[trackId]` streams allowlisted tracks from `private/audio` using the Node.js runtime. `outputFileTracingIncludes` bundles the MP3s into the function.
-- Set `AUDIO_SESSION_SECRET` to a random value of at least 32 characters in Vercel Preview and Production, then redeploy. Generate one with `openssl rand -hex 32`. Production playback fails closed without it; development has a local-only fallback.
-- Visiting `/music`, including route prefetches, issues an HttpOnly, SameSite=Strict signed cookie scoped to `/api/audio`. Sessions last one hour and renew on authorized audio requests. The player also POSTs to `/api/audio/session` on mount, every 30 minutes while visible, and when the tab becomes visible. This handles cached navigation and idle tabs. Playback waits for the first session response. The session endpoint requires a same-origin POST.
-- GET and HEAD support single byte ranges for seeking. Invalid ranges return 416; missing or invalid sessions return 403. Responses use `private, no-store` caching.
-- Listening remains public, and visitors can capture streamed bytes. Audio is no longer tracked in new commits, but copies remain in existing Git history; older deployments may retain public audio URLs. Do not force-add MP3s or rewrite history without an explicit request.
-- No separate storage service is required. Streaming consumes Vercel function and transfer allowances.
+- Deploy from the local checkout. Automatic Git deployments are disabled in `vercel.json`; merging alone does not publish. Fresh clones need the MP3s restored from a local backup.
+- CLI setup: `npx --yes vercel@59.17.0 login`, then `npx --yes vercel@59.17.0 link`. Select the existing `david-daniliucs-projects/daviddaniliuc` project.
+- CLI uploads include Git-ignored audio. `.vercelignore` excludes secrets and generated files. After upload-rule changes, verify with `npx --yes vercel@59.17.0 deploy --dry --format=json`.
+- Keep `private/` limited to audio. The JSON manifest is tracked; MP3s are ignored. Never force-add MP3s or rewrite Git history without an explicit request.
+- The manifest is the single track list for the player, endpoint and deployment check. Use unique IDs (`session` is reserved). `src/lib/music.ts` passes only display metadata and playback URLs to the client.
+- `/api/audio/[trackId]` streams local files with range support. Next.js `outputFileTracingIncludes` bundles the MP3s. Preserve cookie validation, session renewal and private/no-store caching.
+- Vercel Preview and Production require `AUDIO_SESSION_SECRET` of at least 32 characters. Development has a local fallback. Environment changes require redeployment.
+- Public playback can still be captured; historical Git copies remain accessible.
 
 ## Resume
 
-- `scripts/sync_resume.sh` copies only `~/Documents/Resumes/David_Daniliuc_resume.pdf` to `public/resume.pdf`, served at `/resume.pdf`.
-- Set `RESUME_SOURCE_PDF` to override the source path. The source PDF and LaTeX files are never modified.
-- Run the sync command after updating the resume, then commit the updated public PDF and publish with `npm run deploy:prod` to include it in the next deployment.
-- Check mode exits with code 1 if the public copy is missing or out of date.
+`scripts/sync_resume.sh` copies only `~/Documents/Resumes/David_Daniliuc_resume.pdf` to `public/resume.pdf`. Override the source with `RESUME_SOURCE_PDF`. Never modify the original PDF or LaTeX files. Sync, commit the public PDF, then deploy to publish updates.
 
-## Keep it simple
+## Constraints
 
-- Preserve the shared loader, backdrop, footer, local fonts, and reduced-motion support across routes.
-- Keep the background to one demand-driven shader plane; do not add heavy visual dependencies or post-processing without a clear reason.
-- Use the existing warm paper, black/gray, and restrained blue visual language. Keep the site responsive and accessible.
-- Keep biography, roles, project facts, and links accurate. Do not invent claims or metrics.
-- Prefer small focused changes and validate them with the relevant check.
-
-## Development and git
-
-- Never delete `.next` or `node_modules`. If Next/HMR gets stale, restart the dev server cleanly instead.
-- Keep local font files in `src/app/fonts/`.
+- Preserve the shared loader, backdrop, footer, local fonts and reduced-motion support.
+- Keep one demand-driven shader plane; avoid heavy visual dependencies or post-processing without a clear reason.
+- Match the warm paper, black/gray and restrained blue styling. Keep layouts responsive and accessible.
+- Keep facts and links accurate; do not invent claims or metrics.
+- Prefer focused changes and relevant validation.
+- Never delete `.next` or `node_modules`. Restart the dev server cleanly if HMR gets stale.
+- Keep fonts in `src/app/fonts/`.
+- Keep the README brief and nontechnical; put development context here.
 - Use short, plain commit messages with no AI references.

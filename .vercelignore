@@ -1,29 +1,11 @@
-# Upload only deployment inputs. This file takes precedence over .gitignore
-# for CLI uploads, so local MP3s are included while secrets stay excluded.
-/*
-!/src/
-!/src/**
-!/public/
-!/public/**
-!/private/
-!/private/**
-!/scripts/
-!/scripts/**
-!/package.json
-!/package-lock.json
-!/next.config.ts
-!/tsconfig.json
-!/eslint.config.mjs
-!/vercel.json
-!/next-env.d.ts
-
-# Upload the track manifest and MP3 assets from the private audio directory.
-/private/*
-!/private/audio/
-/private/audio/*
-!/private/audio/*.mp3
-!/private/audio/tracks.json
-
-# Never upload local environment files, including nested ones.
+# CLI uploads local files, including Git-ignored audio. Exclude local secrets
+# and build artifacts; ordinary source files are included automatically.
 **/.env*
+**/*.pem
+**/*.local.json
 **/.DS_Store
+*.tsbuildinfo
+*.log
+/coverage/
+/out/
+/build/
