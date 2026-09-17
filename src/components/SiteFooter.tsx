@@ -8,6 +8,7 @@ export default function SiteFooter() {
 			<nav className="site-footer-pages" aria-label="Pages">
 				<Link href="/">home</Link>
 				<Link href="/music">music</Link>
+				<Link href="/resume">resume</Link>
 			</nav>
 			<div className="site-footer-links">
 				<a href="https://github.com/vicdenz/" target="_blank" rel="noreferrer"><LinkIcon name="github" />GitHub</a>
