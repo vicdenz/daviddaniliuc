@@ -18,6 +18,7 @@ Personal site built with Next.js, React, TypeScript, Three.js, and React Three F
 - `npm run lint` — lint
 - `npm run build` — production build; stop the dev server first
 - `npm run test:audio` — range/session tests; requires Node.js 22.6+
+- `npm run test:audio:http` — streaming/access tests against a running local server with MP3s; defaults to localhost:3000, override with `AUDIO_TEST_BASE_URL`
 - `npm run check:audio` — validate the manifest and required local MP3s
 - `npm run sync:resume` — update the public resume PDF
 - `npm run sync:resume -- --check` — check without writing; exits 1 if missing or outdated

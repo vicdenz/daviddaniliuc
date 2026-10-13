@@ -29,6 +29,8 @@ test("audio request checks allow media loads but reject ordinary browser navigat
 	assert.equal(isAudioPlaybackRequest(new Headers({ "sec-fetch-site": "cross-site", "sec-fetch-dest": "audio" }), origin), false);
 	assert.equal(isAudioPlaybackRequest(new Headers({ "sec-fetch-site": "same-site", "sec-fetch-dest": "audio" }), origin), false);
 	assert.equal(isAudioPlaybackRequest(new Headers({ referer: `${origin}/music`, range: "bytes=0-" }), origin), true);
+	assert.equal(isAudioPlaybackRequest(new Headers({ referer: `${origin}/`, range: "bytes=0-" }), origin), true);
+	assert.equal(isAudioPlaybackRequest(new Headers({ referer: `${origin}/music`, range: "bytes=0-", "sec-fetch-mode": "navigate" }), origin), false);
 	assert.equal(isAudioPlaybackRequest(new Headers({ referer: `${origin}/music` }), origin), false);
 	assert.equal(isAudioPlaybackRequest(new Headers({ referer: "https://example.com/music", range: "bytes=0-" }), origin), false);
 	assert.equal(isAudioPlaybackRequest(new Headers(), origin), false);
