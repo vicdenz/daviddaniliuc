@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parseAudioRange } from "../src/lib/audio-range.ts";
+import { isAudioPlaybackRequest } from "../src/lib/audio-request.ts";
 import { createAudioSession, verifyAudioSession } from "../src/lib/audio-session.ts";
 
 test("ranges support full responses, seeking, suffixes and end clamping", () => {
@@ -17,6 +18,19 @@ test("malformed, multipart and unsatisfiable ranges are rejected", () => {
 		"bytes=0-1,3-4", "items=0-1", "bytes=9007199254740992-", "bytes=0-nope"]) {
 		assert.equal(parseAudioRange(header, 100), null, header);
 	}
+});
+
+test("audio requests allow media loads but reject direct navigation and downloads", () => {
+	const origin = "https://www.daviddaniliuc.com";
+	assert.equal(isAudioPlaybackRequest(new Headers({ "sec-fetch-site": "same-origin", "sec-fetch-dest": "audio" }), origin), true);
+	assert.equal(isAudioPlaybackRequest(new Headers({ "sec-fetch-site": "none", "sec-fetch-dest": "document" }), origin), false);
+	assert.equal(isAudioPlaybackRequest(new Headers({ "sec-fetch-site": "same-origin", "sec-fetch-dest": "document" }), origin), false);
+	assert.equal(isAudioPlaybackRequest(new Headers({ "sec-fetch-site": "cross-site", "sec-fetch-dest": "audio" }), origin), false);
+	assert.equal(isAudioPlaybackRequest(new Headers({ "sec-fetch-site": "same-site", "sec-fetch-dest": "audio" }), origin), false);
+	assert.equal(isAudioPlaybackRequest(new Headers({ referer: `${origin}/music`, range: "bytes=0-" }), origin), true);
+	assert.equal(isAudioPlaybackRequest(new Headers({ referer: `${origin}/music` }), origin), false);
+	assert.equal(isAudioPlaybackRequest(new Headers({ referer: "https://example.com/music", range: "bytes=0-" }), origin), false);
+	assert.equal(isAudioPlaybackRequest(new Headers(), origin), false);
 });
 
 test("sessions require a secret, authenticate signatures and expire", async () => {

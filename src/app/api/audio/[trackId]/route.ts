@@ -4,6 +4,7 @@ import path from "node:path";
 import { Readable } from "node:stream";
 import { NextRequest, NextResponse } from "next/server";
 import { parseAudioRange } from "@/lib/audio-range";
+import { isAudioPlaybackRequest } from "@/lib/audio-request";
 import { audioTracks } from "@/lib/music";
 import { audioCookieName, audioCookieOptions, createAudioSession, verifyAudioSession } from "@/lib/audio-session";
 
@@ -14,7 +15,7 @@ export const maxDuration = 300;
 const cacheHeaders = { "Cache-Control": "private, no-store", "Vary": "Cookie" };
 
 async function serveAudio(request: NextRequest, context: { params: Promise<{ trackId: string }> }) {
-	if (request.headers.get("sec-fetch-site") === "cross-site"
+	if (!isAudioPlaybackRequest(request.headers, request.nextUrl.origin)
 		|| !await verifyAudioSession(request.cookies.get(audioCookieName)?.value)) {
 		return new NextResponse(null, { status: 403, headers: cacheHeaders });
 	}
