@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 
 import type { MusicTrack } from "@/lib/music";
+import { AudioPlaybackRecovery, renewAudioSession } from "@/lib/audio-playback";
 
 import styles from "./music.module.css";
 
@@ -27,19 +28,10 @@ function PlayerIcon({ name }: { name: PlayerIconName }) {
 	return <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">{paths}</svg>;
 }
 
-async function renewSession(signal?: AbortSignal) {
-	const response = await fetch("/api/audio/session", {
-		method: "POST", credentials: "same-origin", cache: "no-store", signal,
-	});
-	if (!response.ok) throw new Error("Playback session unavailable");
-}
-
 export default function MusicPlayer({ musicTracks }: { musicTracks: readonly MusicTrack[] }) {
 	const audioRef = useRef<HTMLAudioElement>(null);
 	const playbackIntent = useRef(false);
-	const recoveryTimer = useRef<number | undefined>(undefined);
-	const recoveryAttempts = useRef(0);
-	const resumeTime = useRef<number | undefined>(undefined);
+	const [recovery] = useState(() => new AudioPlaybackRecovery());
 	const [sessionReady, setSessionReady] = useState(false);
 	const [activeTrack, setActiveTrack] = useState(0);
 	const [isPlaying, setIsPlaying] = useState(false);
@@ -60,7 +52,7 @@ export default function MusicPlayer({ musicTracks }: { musicTracks: readonly Mus
 			inFlight = true;
 			window.clearTimeout(retry);
 			try {
-				await renewSession(controller.signal);
+				await renewAudioSession(controller.signal);
 				if (!controller.signal.aborted) {
 					setSessionReady(true);
 					if (!established) setPlaybackError(false);
@@ -85,20 +77,12 @@ export default function MusicPlayer({ musicTracks }: { musicTracks: readonly Mus
 			controller.abort();
 			window.clearInterval(interval);
 			window.clearTimeout(retry);
-			window.clearTimeout(recoveryTimer.current);
+			recovery.cancel();
 			document.removeEventListener("visibilitychange", onVisible);
 		};
-	}, []);
+	}, [recovery]);
 
-	useEffect(() => {
-		const audio = audioRef.current;
-		if (!sessionReady || !audio || audio.getAttribute("src") === track.source) return;
-		audio.setAttribute("src", track.source);
-		audio.load();
-		if (playbackIntent.current) void audio.play().catch(handlePlayRejection);
-	}, [sessionReady, track.source]);
-
-	const handlePlayRejection = (error: unknown) => {
+	const handlePlayRejection = useCallback((error: unknown) => {
 		if (error instanceof DOMException && error.name === "AbortError") return;
 		if (error instanceof DOMException && error.name === "NotAllowedError") {
 			playbackIntent.current = false;
@@ -111,17 +95,30 @@ export default function MusicPlayer({ musicTracks }: { musicTracks: readonly Mus
 			setIsPlaying(false);
 			setPlaybackError(true);
 		}
-	};
+	}, []);
+	const startPlayback = useCallback((audio: HTMLAudioElement) => {
+		playbackIntent.current = true;
+		setIsPlaying(true);
+		setPlaybackError(false);
+		recovery.play(audio, () => playbackIntent.current, handlePlayRejection);
+	}, [recovery, handlePlayRejection]);
+
+	useEffect(() => {
+		const audio = audioRef.current;
+		if (!sessionReady || !audio || audio.getAttribute("src") === track.source) return;
+		audio.setAttribute("src", track.source);
+		audio.load();
+		if (playbackIntent.current) startPlayback(audio);
+	}, [sessionReady, track.source, startPlayback]);
+
 	const requestPlayback = (audio: HTMLAudioElement) => {
 		if (!sessionReady) return;
-		if (audio.error || recoveryAttempts.current >= 2) {
-			window.clearTimeout(recoveryTimer.current);
-			recoveryAttempts.current = 0;
+		recovery.succeeded();
+		if (audio.error) {
+			recovery.rememberTime(audio.currentTime);
 			audio.load();
 		}
-		playbackIntent.current = true;
-		setPlaybackError(false);
-		void audio.play().catch(handlePlayRejection);
+		startPlayback(audio);
 	};
 	const selectTrack = (index: number, shouldPlay?: boolean) => {
 		const audio = audioRef.current;
@@ -135,9 +132,7 @@ export default function MusicPlayer({ musicTracks }: { musicTracks: readonly Mus
 			}
 			return;
 		}
-		window.clearTimeout(recoveryTimer.current);
-		recoveryAttempts.current = 0;
-		resumeTime.current = undefined;
+		recovery.reset();
 		playbackIntent.current = continuePlayback;
 		audio.pause();
 		setIsPlaying(false);
@@ -148,7 +143,7 @@ export default function MusicPlayer({ musicTracks }: { musicTracks: readonly Mus
 		if (sessionReady) {
 			audio.setAttribute("src", musicTracks[index].source);
 			audio.load();
-			if (continuePlayback) void audio.play().catch(handlePlayRejection);
+			if (continuePlayback) startPlayback(audio);
 		}
 	};
 
@@ -158,7 +153,9 @@ export default function MusicPlayer({ musicTracks }: { musicTracks: readonly Mus
 		selectTrack(nextTrack);
 	};
 	const handleTrackEnd = () => {
+		recovery.cancel();
 		playbackIntent.current = false;
+		setIsPlaying(false);
 		if (autoplay && activeTrack < musicTracks.length - 1) selectTrack(activeTrack + 1, true);
 	};
 	const togglePlayback = () => {
@@ -166,7 +163,7 @@ export default function MusicPlayer({ musicTracks }: { musicTracks: readonly Mus
 		if (!audio) return;
 		if (playbackIntent.current) {
 			playbackIntent.current = false;
-			window.clearTimeout(recoveryTimer.current);
+			recovery.cancel();
 			audio.pause();
 			setIsPlaying(false);
 		} else requestPlayback(audio);
@@ -177,40 +174,23 @@ export default function MusicPlayer({ musicTracks }: { musicTracks: readonly Mus
 	const syncDuration = (audio: HTMLAudioElement) => {
 		if (Number.isFinite(audio.duration) && audio.duration > 0) setDuration(audio.duration);
 	};
-	const restoreTime = (audio: HTMLAudioElement) => {
-		if (resumeTime.current !== undefined) {
-			audio.currentTime = resumeTime.current;
-			resumeTime.current = undefined;
-		}
-	};
 	const handlePlaybackError = () => {
 		const audio = audioRef.current;
 		if (!audio || !sessionReady) return;
-		setIsPlaying(false);
-		if (recoveryAttempts.current >= 2) {
+		recovery.retry(audio, renewAudioSession, () => {
+			if (playbackIntent.current) startPlayback(audio);
+		}, () => {
 			playbackIntent.current = false;
+			setIsPlaying(false);
 			setPlaybackError(true);
-			return;
-		}
-		recoveryAttempts.current += 1;
-		const source = audio.getAttribute("src");
-		const shouldResume = playbackIntent.current;
-		resumeTime.current = audio.currentTime > 0 ? audio.currentTime : undefined;
-		window.clearTimeout(recoveryTimer.current);
-		recoveryTimer.current = window.setTimeout(() => {
-			void (async () => {
-				try { await renewSession(); } catch { /* The existing session may still work. */ }
-				if (audio.getAttribute("src") !== source) return;
-				audio.load();
-				if (shouldResume && playbackIntent.current) void audio.play().catch(handlePlayRejection);
-			})();
-		}, recoveryAttempts.current * 1000);
+		});
 	};
 	const seek = (nextTime: number) => {
 		const audio = audioRef.current;
 		if (!audio || !Number.isFinite(nextTime)) return;
 		const clampedTime = Math.min(Math.max(nextTime, 0), duration);
-		audio.currentTime = clampedTime;
+		if (recovery.resumeTime !== undefined) recovery.resumeTime = clampedTime;
+		else audio.currentTime = clampedTime;
 		setCurrentTime(clampedTime);
 	};
 
@@ -227,17 +207,22 @@ export default function MusicPlayer({ musicTracks }: { musicTracks: readonly Mus
 					preload="metadata"
 					onLoadedMetadata={(event) => {
 						syncDuration(event.currentTarget);
-						restoreTime(event.currentTarget);
+						recovery.restoreTime(event.currentTarget);
 					}}
 					onDurationChange={(event) => syncDuration(event.currentTarget)}
-					onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
-					onSeeked={(event) => setCurrentTime(event.currentTarget.currentTime)}
+					onTimeUpdate={(event) => setCurrentTime(recovery.resumeTime ?? event.currentTarget.currentTime)}
+					onSeeked={(event) => setCurrentTime(recovery.resumeTime ?? event.currentTarget.currentTime)}
 					onPlaying={() => {
-						recoveryAttempts.current = 0;
+						playbackIntent.current = true;
+						recovery.succeeded();
 						setIsPlaying(true);
 						setPlaybackError(false);
 					}}
-					onPause={() => {
+					onPause={(event) => {
+						// Ignore pause events queued by an older source or a failed load.
+						if (!event.currentTarget.paused || event.currentTarget.error) return;
+						playbackIntent.current = false;
+						recovery.cancel();
 						setIsPlaying(false);
 					}}
 					onEnded={handleTrackEnd}

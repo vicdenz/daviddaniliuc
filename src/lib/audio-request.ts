@@ -1,5 +1,6 @@
 // Browser media loads identify their destination. Older browsers may omit Fetch
 // Metadata headers, so allow their ranged requests from the music page too.
+// This blocks ordinary navigation; external clients can replay these headers.
 export function isAudioPlaybackRequest(headers: Headers, origin: string) {
 	const site = headers.get("sec-fetch-site");
 	if (site && site !== "same-origin") return false;
