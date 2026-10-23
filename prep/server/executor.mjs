@@ -13,10 +13,10 @@ import { isDeepStrictEqual } from "node:util";
 import { fileURLToPath } from "node:url";
 const base = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const python =
-  process.env.FASTPREP_PYTHON ||
+  process.env.PREP_PYTHON ||
   spawnSync("which", ["python3"], { encoding: "utf8" }).stdout.trim();
 const compiler =
-  process.env.FASTPREP_CXX ||
+  process.env.PREP_CXX ||
   (process.platform === "darwin"
     ? spawnSync("/usr/bin/xcrun", ["--find", "clang++"], {
         encoding: "utf8",
@@ -24,7 +24,7 @@ const compiler =
     : spawnSync("which", ["g++"], { encoding: "utf8" }).stdout.trim());
 const MB = 1024 * 1024;
 export const sandboxBackend =
-  process.env.FASTPREP_SANDBOX ||
+  process.env.PREP_SANDBOX ||
   (process.platform === "darwin" ? "seatbelt" : "docker");
 export function sandboxInfo() {
   if (sandboxBackend === "seatbelt")
@@ -38,7 +38,7 @@ export function sandboxInfo() {
           "/usr/bin/true",
         ]).status === 0,
     };
-  const r = spawnSync("docker", ["image", "inspect", "fastprep-runner:local"], {
+  const r = spawnSync("docker", ["image", "inspect", "prep-runner:local"], {
     timeout: 3000,
     stdio: "ignore",
   });
@@ -80,7 +80,7 @@ async function restricted(
     ];
   } else {
     const name =
-      "fastprep-" +
+      "prep-" +
       path.basename(dir) +
       "-" +
       Math.random().toString(36).slice(2);
@@ -106,7 +106,7 @@ async function restricted(
       "/tmp:rw,noexec,nosuid,size=32m",
       "-v",
       `${dir}:/work:rw`,
-      "fastprep-runner:local",
+      "prep-runner:local",
       command === python
         ? "python3"
         : command === compiler
@@ -219,21 +219,21 @@ function cppDriver(problem) {
       judge.legacyEntry && !judge.legacyEntry.includes(".")
         ? `${judge.legacyEntry}(std::forward<Args>(values)...)`
         : `T{}.${judge.method}(std::forward<Args>(values)...)`;
-    dispatch = `template<class T, class... Args> auto davidsprep_invoke(Args&&... values) {
+    dispatch = `template<class T, class... Args> auto prep_invoke(Args&&... values) {
       if constexpr (requires(T instance) { instance.${judge.method}(std::forward<Args>(values)...); })
         return T{}.${judge.method}(std::forward<Args>(values)...);
       else return ${fallback};
     }`;
-    call = `davidsprep_invoke<${judge.className}>(${args})`;
+    call = `prep_invoke<${judge.className}>(${args})`;
   } else if (judge?.mode === "load-balancer") {
-    dispatch = `template<class T, class N, class Logs> auto davidsprep_invoke(N count, Logs& logs) {
+    dispatch = `template<class T, class N, class Logs> auto prep_invoke(N count, Logs& logs) {
       if constexpr (requires(T instance) { instance.handle_request(logs[0]); }) {
         T instance(count); vector<long long> results;
         for (auto& line : logs) { auto target = instance.handle_request(line); if (target.has_value()) results.push_back(*target); }
         return results;
       } else return solve(count, logs);
     }`;
-    call = `davidsprep_invoke<${judge.className}>(${args})`;
+    call = `prep_invoke<${judge.className}>(${args})`;
   }
   return `
 #include <iostream>
@@ -258,7 +258,7 @@ export async function execute(problem, code, language, cases, artifacts = []) {
     throw new Error(
       "Execution sandbox unavailable. On Linux start Docker and build the runner image; on macOS enable sandbox-exec. Execution never falls back to unrestricted host processes.",
     );
-  const dir = await realpath(await mkdtemp(path.join(tmpdir(), "fastprep-")));
+  const dir = await realpath(await mkdtemp(path.join(tmpdir(), "prep-")));
   await chmod(dir, 0o777);
   const results = [];
   try {

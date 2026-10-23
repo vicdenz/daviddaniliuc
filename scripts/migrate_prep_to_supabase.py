@@ -11,8 +11,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "davidsprep/data/practice.sqlite"
-PASSWORD_FILE = ROOT / "davidsprep/.env.supabase.local"
+SOURCE = ROOT / "prep/data/practice.sqlite"
+PASSWORD_FILE = ROOT / "prep/.env.supabase.local"
 POOLER_URL_FILE = ROOT / "supabase/.temp/pooler-url"
 TABLES = (
     ("problems", "prep_problems", ("id", "payload")),

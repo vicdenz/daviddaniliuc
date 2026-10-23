@@ -13,7 +13,7 @@ export function installAuth(app, db, settings) {
     settings.sessionSecret.length < 32
   )
     throw new Error(
-      "Set DAVIDSPREP_PASSWORD and a DAVIDSPREP_SESSION_SECRET of at least 32 characters in .env.local.",
+      "Set PREP_PASSWORD and a PREP_SESSION_SECRET of at least 32 characters in .env.local.",
     );
   db.exec(`CREATE TABLE IF NOT EXISTS auth_sessions(token_hash TEXT PRIMARY KEY,password_version TEXT NOT NULL,expires INTEGER NOT NULL);
  CREATE TABLE IF NOT EXISTS auth_attempts(client TEXT PRIMARY KEY,failures INTEGER NOT NULL,reset_at INTEGER NOT NULL);`);
@@ -21,8 +21,8 @@ export function installAuth(app, db, settings) {
   const expected = scryptSync(settings.password, settings.sessionSecret, 32);
   const secure = !!settings.publicOrigin;
   const cookieName = secure
-    ? "__Secure-davidsprep_session"
-    : "davidsprep_session";
+    ? "__Secure-prep_session"
+    : "prep_session";
   const options = {
     httpOnly: true,
     sameSite: "strict",

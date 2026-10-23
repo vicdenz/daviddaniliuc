@@ -39,14 +39,14 @@ import {
 } from "lucide-react";
 import "./style.css";
 const appBase = import.meta.env.BASE_URL;
-const apiPath = (path) => appBase + "api" + path;
+const apiPath = (path) => (import.meta.env.VITE_API_BASE || appBase + "api") + path;
 self.MonacoEnvironment = {
   getWorker() {
     return new EditorWorker();
   },
 };
 loader.config({ monaco });
-monaco.editor.defineTheme("fastprep", {
+monaco.editor.defineTheme("prep", {
   base: "vs-dark",
   inherit: true,
   rules: [
@@ -77,6 +77,10 @@ monaco.editor.defineTheme("fastprep", {
   },
 });
 async function api(url, options) {
+  if (typeof options?.body === "string" && options.body.length > 1000000 && typeof CompressionStream !== "undefined") {
+    const compressed = new Blob([options.body]).stream().pipeThrough(new CompressionStream("gzip"));
+    options = { ...options, body: await new Response(compressed).arrayBuffer(), headers: { ...options.headers, "Content-Encoding": "gzip" } };
+  }
   const r = await fetch(apiPath(url), {
     ...options,
     headers: { "Content-Type": "application/json", ...options?.headers },
@@ -87,10 +91,17 @@ async function api(url, options) {
       data = await r.json();
     } catch {}
     if (r.status === 401 && !url.startsWith("/auth/"))
-      window.dispatchEvent(new Event("davidsprep:expired"));
+      window.dispatchEvent(new Event("prep:expired"));
     throw new Error(data?.error || `Request failed (${r.status})`);
   }
-  return r.json();
+  let data = await r.json();
+  while (data.jobId && data.pending) {
+    if (data.retryAfter) await new Promise((resolve) => setTimeout(resolve, data.retryAfter));
+    const next = await fetch(apiPath(`/jobs/${data.jobId}/advance`), { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+    data = await next.json();
+    if (!next.ok) throw new Error(data.error || `Request failed (${next.status})`);
+  }
+  return data;
 }
 const send = (url, body, method = "PUT") =>
   api(url, { method, body: JSON.stringify(body) });
@@ -161,10 +172,10 @@ function App() {
     [file, setFile] = useState(null),
     [hideSidebar, setHideSidebar] = useState(false);
   const [split, setSplit] = useState(
-      Number(localStorage.getItem("fastprep-split")) || 44,
+      Number(localStorage.getItem("prep-split")) || 44,
     ),
     [lower, setLower] = useState(
-      Number(localStorage.getItem("fastprep-lower")) || 40,
+      Number(localStorage.getItem("prep-lower")) || 40,
     );
   const noteDirty = useRef(false),
     notesRef = useRef(""),
@@ -240,8 +251,8 @@ function App() {
     if (!id) return;
     try {
       await send(`/problems/${id}/work`, { language: lang, code: text });
-      if (getDraft(`fastprep-draft:${id}:${lang}`) === text)
-        removeDraft(`fastprep-draft:${id}:${lang}`);
+      if (getDraft(`prep-draft:${id}:${lang}`) === text)
+        removeDraft(`prep-draft:${id}:${lang}`);
       if (currentId.current === id) setSaveState("Saved locally");
     } catch (e) {
       setError(e.message);
@@ -275,7 +286,7 @@ function App() {
         workRef.current = { ...p.work };
         const lang = p.languages.includes(language) ? language : "python";
         setLanguage(lang);
-        const draft = getDraft(`fastprep-draft:${p.id}:${lang}`);
+        const draft = getDraft(`prep-draft:${p.id}:${lang}`);
         const value = draft ?? p.work[lang] ?? p.starters[lang];
         dirty.current = draft !== null;
         codeRef.current = value;
@@ -317,7 +328,7 @@ function App() {
   function changeCode(value) {
     dirty.current = true;
     const text = value ?? "";
-    saveDraft(`fastprep-draft:${problem.id}:${language}`, text);
+    saveDraft(`prep-draft:${problem.id}:${language}`, text);
     setCode(text);
     codeRef.current = text;
     workRef.current[language] = text;
@@ -466,14 +477,14 @@ function App() {
           Math.min(65, ((ev.clientX - bounds.left) / bounds.width) * 100),
         );
         setSplit(value);
-        localStorage.setItem("fastprep-split", value);
+        localStorage.setItem("prep-split", value);
       } else {
         const value = Math.max(
           24,
           Math.min(75, ((bounds.bottom - ev.clientY) / bounds.height) * 100),
         );
         setLower(value);
-        localStorage.setItem("fastprep-lower", value);
+        localStorage.setItem("prep-lower", value);
       }
     };
     const done = () => {
@@ -567,7 +578,7 @@ function App() {
             onClick={async () => {
               await flush();
               await send("/auth/logout", {}, "POST");
-              window.dispatchEvent(new Event("davidsprep:expired"));
+              window.dispatchEvent(new Event("prep:expired"));
             }}
           >
             Sign out
@@ -1119,7 +1130,7 @@ function App() {
                       language={language === "python" ? "python" : "cpp"}
                       value={code}
                       onChange={changeCode}
-                      theme="fastprep"
+                      theme="prep"
                       loading={
                         <div className="loading">
                           <Loader2 className="spin" />
@@ -1907,8 +1918,8 @@ function AccessGate() {
         setState("locked");
       });
     const expired = () => setState("locked");
-    window.addEventListener("davidsprep:expired", expired);
-    return () => window.removeEventListener("davidsprep:expired", expired);
+    window.addEventListener("prep:expired", expired);
+    return () => window.removeEventListener("prep:expired", expired);
   }, []);
   if (state === "ready") return <App />;
   if (state === "loading")

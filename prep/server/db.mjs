@@ -7,8 +7,7 @@ export const base = path.resolve(
   "..",
 );
 export function openDb(
-  filename = process.env.DAVIDSPREP_DB ||
-    process.env.FASTPREP_DB ||
+  filename = process.env.PREP_DB ||
     path.join(base, "data/practice.sqlite"),
 ) {
   const db = new DatabaseSync(filename);
