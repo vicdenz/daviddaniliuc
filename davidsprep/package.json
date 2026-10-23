@@ -1,0 +1,35 @@
+{
+  "name": "davidsprep",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server/dev.mjs",
+    "start": "node server/index.mjs",
+    "build": "vite build",
+    "import": "python3 scripts/import_problems.py",
+    "test": "node --test tests/*.test.mjs",
+    "validate": "python3 scripts/validate_migration.py",
+    "format": "prettier --write src server tests vite.config.js",
+    "test:browser": "node tests/browser.mjs"
+  },
+  "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
+    "express": "^5.1.0",
+    "lucide-react": "^0.468.0",
+    "monaco-editor": "^0.52.2",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@vitejs/plugin-react": "^4.5.0",
+    "prettier": "^3.6.2",
+    "vite": "^6.3.0"
+  },
+  "engines": {
+    "node": ">=22.13"
+  }
+}

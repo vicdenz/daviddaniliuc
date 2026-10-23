@@ -9,3 +9,15 @@
 /coverage/
 /out/
 /build/
+/davidsprep/data/*.sqlite*
+/davidsprep/data/*.json
+/davidsprep/data/originals/
+/davidsprep/problems/
+/davidsprep/reviewed/
+/davidsprep/scripts/
+/davidsprep/tests/
+/davidsprep/docs/
+/davidsprep/deploy/
+/davidsprep/node_modules/
+/davidsprep/dist/
+/davidsprep/.venv/
