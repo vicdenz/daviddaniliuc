@@ -5,6 +5,17 @@ import { createClient } from "@supabase/supabase-js";
 import { gzipSync } from "node:zlib";
 
 const base = process.env.PREP_TEST_URL || "http://localhost:3000";
+if (process.env.PREP_TEST_BYPASS) {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (url, options = {}) => {
+    if (String(url).startsWith(base)) {
+      const headers = new Headers(options.headers);
+      headers.set("x-vercel-protection-bypass", process.env.PREP_TEST_BYPASS);
+      options = { ...options, headers };
+    }
+    return originalFetch(url, options);
+  };
+}
 const db = createClient(
   process.env.PREP_SUPABASE_URL,
   process.env.PREP_SUPABASE_SECRET_KEY,
