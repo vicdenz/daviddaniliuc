@@ -42,6 +42,7 @@ Personal site built with Next.js, React, TypeScript, Three.js, and React Three F
 - Supabase project `prep` stores the library, all visible cases, sources, work, notes, submissions, sessions, and execution jobs. Schema changes live in `supabase/migrations/`. `PREP_*` environment variables are server-only; pull local values with the Vercel CLI.
 - Vercel Sandbox runs one fresh, non-persistent, network-disabled VM per batch. Its snapshot includes Python/pytest and C++20. Never put storage credentials inside the guest. Submit always runs the whole available suite; no hidden tests.
 - With a server running, `npm run test:prep` checks HTTP behavior and persistence across a separate server restart. Tests use temporary problems and clean them up. See `prep/INTEGRATION.md` for hosted setup and limits.
+- The header's daily compute target is advisory, not a provider cutoff. `prep_usage` records per-session SDK CPU readings and explicit estimates; `/prep/api/usage` is private. It tracks this app from the migration onward, not historical account-wide billing. Keep those qualifications visible when changing the meter.
 - Compatible PostCSS/source-map-js and CLI-config Zod overrides address advisories in upstream dependency pins. Review those overrides when upgrading Next or the Sandbox SDK. Next is on the patched 15.5.28 release.
 
 ## Resume

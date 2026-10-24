@@ -5,6 +5,7 @@ import * as monaco from "monaco-editor";
 import EditorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import UsageStatus from "./UsageStatus.jsx";
 import {
   ArrowLeft,
   ArrowRight,
@@ -101,6 +102,7 @@ async function api(url, options) {
     data = await next.json();
     if (!next.ok) throw new Error(data.error || `Request failed (${next.status})`);
   }
+  if (url.endsWith("/run") || url.endsWith("/prepare")) window.dispatchEvent(new Event("prep:usage"));
   return data;
 }
 const send = (url, body, method = "PUT") =>
@@ -607,6 +609,7 @@ function App() {
                 : problem?.title || "Practice"}
             </strong>
           </div>
+          <UsageStatus request={api} />
         </header>
         {error && (
           <div className="error-banner" role="alert">

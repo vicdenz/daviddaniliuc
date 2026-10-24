@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import { cppDriver } from "./cpp-driver.mjs";
+import { beginUsage, finishUsage } from "./usage.mjs";
 
 const root = path.join(process.cwd(), "prep");
 const cwd = "/vercel/sandbox/work";
@@ -23,13 +24,23 @@ os.execv(sys.argv[3],sys.argv[3:])
 export async function execute(problem, code, language, cases, artifacts = []) {
   if (!process.env.PREP_CPP_SNAPSHOT_ID)
     throw new Error("Execution environment is not configured.");
-  const sandbox = await Sandbox.create({
-    source: { type: "snapshot", snapshotId: process.env.PREP_CPP_SNAPSHOT_ID },
-    networkPolicy: "deny-all",
-    persistent: false,
-    timeout: 240000,
-    resources: { vcpus: 1 },
-  });
+  const usage = await beginUsage();
+  let sandbox;
+  try {
+    sandbox = await Sandbox.create({
+      source: {
+        type: "snapshot",
+        snapshotId: process.env.PREP_CPP_SNAPSHOT_ID,
+      },
+      networkPolicy: "deny-all",
+      persistent: false,
+      timeout: 240000,
+      resources: { vcpus: 1 },
+    });
+  } catch (e) {
+    await finishUsage(usage, undefined, false);
+    throw e;
+  }
   const put = (name, content) => ({
     path: `${cwd}/${name}`,
     content: Buffer.from(content),
@@ -247,7 +258,13 @@ export async function execute(problem, code, language, cases, artifacts = []) {
     }
     return results;
   } finally {
-    await sandbox.stop();
+    let stopped = false;
+    try {
+      await sandbox.stop();
+      stopped = true;
+    } finally {
+      await finishUsage(usage, sandbox.activeCpuUsageMs, stopped);
+    }
   }
 }
 

@@ -1,4 +1,5 @@
-import { createClient } from "@supabase/supabase-js";
+import { getDb } from "./storage.mjs";
+import { getUsage } from "./usage.mjs";
 import {
   createHash,
   randomBytes,
@@ -9,21 +10,12 @@ import {
 import { gzipSync, gunzipSync } from "node:zlib";
 import { execute, prepareCode } from "./executor.mjs";
 
-let client;
 const hash = (s) => createHash("sha256").update(s).digest("hex");
 const lifetime = 400 * 24 * 60 * 60 * 1000;
 const fail = (message, status = 400) => {
   throw Object.assign(new Error(message), { status });
 };
-const db = () => {
-  if (!process.env.PREP_SUPABASE_URL || !process.env.PREP_SUPABASE_SECRET_KEY)
-    fail("Prep storage is not configured.", 503);
-  return (client ??= createClient(
-    process.env.PREP_SUPABASE_URL,
-    process.env.PREP_SUPABASE_SECRET_KEY,
-    { auth: { persistSession: false, autoRefreshToken: false } },
-  ));
-};
+const db = getDb;
 const checked = async (query) => {
   const r = await query;
   if (r.error) fail(r.error.message, 503);
@@ -217,6 +209,7 @@ export async function handle(request) {
     if (route.join("/") === "auth/session" && method === "GET")
       return reply({ authenticated: !!session });
     if (!session) fail("Sign in to continue.", 401);
+    if (route[0] === "usage" && method === "GET") return reply(await getUsage());
     if (route[0] === "health")
       return reply({
         ok: true,
