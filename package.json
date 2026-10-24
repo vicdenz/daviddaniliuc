@@ -7,16 +7,20 @@
     "test:audio": "node --experimental-strip-types --test tests/audio.test.mjs",
     "test:audio:http": "node --test tests/audio-http.test.mjs",
     "check:audio": "node scripts/check_audio.mjs",
-    "deploy:preview": "npm run check:audio && npx --yes vercel@59.17.0 deploy",
-    "deploy:prod": "npm run check:audio && npx --yes vercel@59.17.0 deploy --prod",
-    "dev": "next dev --port 3000",
-    "build": "npm run check:audio && next build",
+    "deploy:preview": "npm run check:audio && npx --yes vercel@65.2.0 deploy",
+    "deploy:prod": "npm run check:audio && npx --yes vercel@65.2.0 deploy --prod",
+    "dev": "npm run build:prep && next dev --port 3000",
+    "build": "npm run check:audio && npm run build:prep && next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "build:prep": "node scripts/build_prep.mjs",
+    "test:prep": "node --env-file=.env.local --test tests/prep-http.test.mjs tests/prep-restart.test.mjs tests/prep-usage.test.mjs tests/prep-values.test.mjs tests/prep-workspace.test.mjs"
   },
   "dependencies": {
     "@react-three/fiber": "^9.3.0",
-    "next": "^15.5.23",
+    "@supabase/supabase-js": "^2.118.0",
+    "@vercel/sandbox": "^3.9.0",
+    "next": "^15.5.28",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "rough-notation": "^0.5.1",
@@ -29,8 +33,15 @@
     "@types/react-dom": "^19",
     "@types/three": "^0.179.0",
     "eslint": "^9",
-    "eslint-config-next": "^15.5.23",
+    "eslint-config-next": "^15.5.28",
     "raw-loader": "^4.0.2",
     "typescript": "^5"
+  },
+  "overrides": {
+    "postcss": "^8.5.23",
+    "source-map-js": "^1.2.2",
+    "@vercel/cli-config": {
+      "zod": "^4.6.6"
+    }
   }
 }
