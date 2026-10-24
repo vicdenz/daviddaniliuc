@@ -14,7 +14,7 @@
     "start": "next start",
     "lint": "eslint .",
     "build:prep": "node scripts/build_prep.mjs",
-    "test:prep": "node --env-file=.env.local --test tests/prep-http.test.mjs tests/prep-restart.test.mjs tests/prep-usage.test.mjs"
+    "test:prep": "node --env-file=.env.local --test tests/prep-http.test.mjs tests/prep-restart.test.mjs tests/prep-usage.test.mjs tests/prep-values.test.mjs"
   },
   "dependencies": {
     "@react-three/fiber": "^9.3.0",

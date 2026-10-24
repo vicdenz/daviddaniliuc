@@ -1867,3 +1867,118 @@ kbd {
   margin: 17px 0 0;
   text-align: center;
 }
+
+/* Test data and navigation stay readable independently of the code editor. */
+.test-panel-heading {
+  height: 50px;
+}
+.test-panel .panel-tabs button {
+  font-size: 15px;
+  min-height: 46px;
+}
+.test-panel .icon-button {
+  min-width: 38px;
+  min-height: 38px;
+}
+.test-panel .case-search {
+  padding: 12px 10px;
+  gap: 8px;
+}
+.test-panel .case-search input {
+  font-size: 14px;
+}
+.test-panel .case-item {
+  font-size: 14px;
+  padding: 14px 10px;
+  gap: 8px;
+  min-height: 58px;
+}
+.test-panel .case-item.selected {
+  padding-left: 8px;
+}
+.test-panel .case-item small {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.test-panel .case-neutral {
+  font-size: 13px;
+}
+.test-panel .case-item svg {
+  width: 14px;
+  height: 14px;
+}
+.test-panel .case-detail-header h3 {
+  font-size: 17px;
+}
+.test-panel .origin-label {
+  font-size: 13px;
+}
+.test-panel .case-value-label,
+.test-panel .case-value-label button {
+  font-size: 14px;
+}
+.test-panel .case-value {
+  margin: 16px 0;
+}
+.test-panel .case-value pre {
+  font-size: 14px;
+  line-height: 1.65;
+  padding: 14px;
+}
+.test-panel .error-output {
+  font-size: 14px;
+  line-height: 1.6;
+}
+.test-panel .case-detail-footer {
+  font-size: 13px;
+  gap: 12px;
+}
+.test-panel .case-detail-footer .secondary {
+  font-size: 14px;
+  padding: 9px 12px;
+  min-height: 38px;
+}
+.test-panel .verdict {
+  font-size: 14px;
+  gap: 12px;
+}
+.test-panel .verdict strong {
+  font-size: 17px;
+}
+.test-panel .result-summary {
+  font-size: 14px;
+}
+.test-panel .result-row-title {
+  font-size: 14px;
+  padding: 15px 0;
+  gap: 9px;
+  min-height: 48px;
+}
+.test-panel .result-row-title strong {
+  font-size: 15px;
+  font-weight: 500;
+}
+.test-panel .result-row-title small,
+.test-panel .result-row-title > span {
+  font-size: 13px;
+}
+.test-panel .text-button {
+  font-size: 14px;
+  min-height: 38px;
+}
+.test-panel .actual-heading {
+  font-size: 14px;
+  gap: 12px;
+}
+.test-panel .actual-heading > span {
+  font-size: 13px;
+}
+.case-form .field-label textarea {
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 120px;
+}
+.markdown pre,
+.markdown code {
+  font-size: 13px;
+}

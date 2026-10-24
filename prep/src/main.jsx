@@ -7,6 +7,11 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import UsageStatus from "./UsageStatus.jsx";
 import {
+  formatValue,
+  formatArguments,
+  formatExample,
+} from "./value-format.mjs";
+import {
   ArrowLeft,
   ArrowRight,
   ArrowUpRight,
@@ -40,7 +45,8 @@ import {
 } from "lucide-react";
 import "./style.css";
 const appBase = import.meta.env.BASE_URL;
-const apiPath = (path) => (import.meta.env.VITE_API_BASE || appBase + "api") + path;
+const apiPath = (path) =>
+  (import.meta.env.VITE_API_BASE || appBase + "api") + path;
 self.MonacoEnvironment = {
   getWorker() {
     return new EditorWorker();
@@ -78,9 +84,19 @@ monaco.editor.defineTheme("prep", {
   },
 });
 async function api(url, options) {
-  if (typeof options?.body === "string" && options.body.length > 1000000 && typeof CompressionStream !== "undefined") {
-    const compressed = new Blob([options.body]).stream().pipeThrough(new CompressionStream("gzip"));
-    options = { ...options, body: await new Response(compressed).arrayBuffer(), headers: { ...options.headers, "Content-Encoding": "gzip" } };
+  if (
+    typeof options?.body === "string" &&
+    options.body.length > 1000000 &&
+    typeof CompressionStream !== "undefined"
+  ) {
+    const compressed = new Blob([options.body])
+      .stream()
+      .pipeThrough(new CompressionStream("gzip"));
+    options = {
+      ...options,
+      body: await new Response(compressed).arrayBuffer(),
+      headers: { ...options.headers, "Content-Encoding": "gzip" },
+    };
   }
   const r = await fetch(apiPath(url), {
     ...options,
@@ -97,17 +113,24 @@ async function api(url, options) {
   }
   let data = await r.json();
   while (data.jobId && data.pending) {
-    if (data.retryAfter) await new Promise((resolve) => setTimeout(resolve, data.retryAfter));
-    const next = await fetch(apiPath(`/jobs/${data.jobId}/advance`), { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+    if (data.retryAfter)
+      await new Promise((resolve) => setTimeout(resolve, data.retryAfter));
+    const next = await fetch(apiPath(`/jobs/${data.jobId}/advance`), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "{}",
+    });
     data = await next.json();
-    if (!next.ok) throw new Error(data.error || `Request failed (${next.status})`);
+    if (!next.ok)
+      throw new Error(data.error || `Request failed (${next.status})`);
   }
-  if (url.endsWith("/run") || url.endsWith("/prepare")) window.dispatchEvent(new Event("prep:usage"));
+  if (url.endsWith("/run") || url.endsWith("/prepare"))
+    window.dispatchEvent(new Event("prep:usage"));
   return data;
 }
 const send = (url, body, method = "PUT") =>
   api(url, { method, body: JSON.stringify(body) });
-const pretty = (x) => JSON.stringify(x, null, 2);
+const pretty = formatValue;
 const statusLabel = {
   todo: "Not started",
   attempted: "In progress",
@@ -928,6 +951,11 @@ function App() {
                         <ReactMarkdown
                           remarkPlugins={[remarkGfm]}
                           components={{
+                            code: ({ children, className }) => (
+                              <code className={className}>
+                                {formatExample(String(children), className)}
+                              </code>
+                            ),
                             a: (props) => (
                               <a {...props} target="_blank" rel="noreferrer" />
                             ),
@@ -1302,6 +1330,9 @@ function App() {
                                 "case-item " +
                                 (activeCase === c.id ? "selected" : "")
                               }
+                              aria-current={
+                                activeCase === c.id ? "true" : undefined
+                              }
                               onClick={() => setActiveCase(c.id)}
                             >
                               <span
@@ -1387,11 +1418,16 @@ function App() {
                             <CaseValue
                               title={
                                 caseData.kind === "function"
-                                  ? "Input · positional arguments"
+                                  ? "Input"
                                   : "Input & assertions · Python source"
                               }
                               value={caseData.input}
                               raw={caseData.kind !== "function"}
+                              parameters={
+                                caseData.kind === "function"
+                                  ? problem.args || []
+                                  : undefined
+                              }
                             />
                             <CaseValue
                               title="Expected output"
@@ -1421,6 +1457,7 @@ function App() {
                                 <CaseValue
                                   title="Smaller workload input"
                                   value={caseData.growthInput}
+                                  parameters={problem.args || []}
                                 />
                                 <CaseValue
                                   title="Smaller workload expected output"
@@ -1685,9 +1722,13 @@ function StatusIcon({ status }) {
     <span className="status-todo" title="Not started" />
   );
 }
-function CaseValue({ title, value, raw }) {
+function CaseValue({ title, value, raw, parameters }) {
   const [expanded, setExpanded] = useState(false);
-  const text = raw ? String(value) : pretty(value);
+  const text = raw
+    ? String(value)
+    : parameters && Array.isArray(value)
+      ? formatArguments(value, parameters)
+      : pretty(value);
   const long = text?.length > 20000;
   return (
     <div className="case-value">
@@ -1714,7 +1755,11 @@ function ResultRow({ r, onInspect }) {
     <div
       className={"result-row " + (r.status === "passed" ? "passed" : "failed")}
     >
-      <button className="result-row-title" onClick={() => setOpen(!open)}>
+      <button
+        className="result-row-title"
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+      >
         <ChevronRight
           size={13}
           style={{ transform: open ? "rotate(90deg)" : "" }}
@@ -1758,6 +1803,7 @@ function CaseForm({ item, onSave }) {
     [busy, setBusy] = useState(false);
   return (
     <form
+      className="case-form"
       onSubmit={async (e) => {
         e.preventDefault();
         setBusy(true);
