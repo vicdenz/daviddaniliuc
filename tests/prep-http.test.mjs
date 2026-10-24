@@ -11,7 +11,11 @@ if (process.env.PREP_TEST_BYPASS) {
     if (String(url).startsWith(base)) {
       const headers = new Headers(options.headers);
       headers.set("x-vercel-protection-bypass", process.env.PREP_TEST_BYPASS);
-      options = { ...options, headers };
+      options = {
+        ...options,
+        headers,
+        signal: options.signal || AbortSignal.timeout(90000),
+      };
     }
     return originalFetch(url, options);
   };
@@ -33,6 +37,7 @@ async function call(path, method = "GET", body) {
   return { response, data };
 }
 async function run(language, code, mode, caseIds, onQueued) {
+  console.log(`Checking ${language} ${mode}`);
   let { response, data } = await call(`/problems/${id}/run`, "POST", {
     language,
     code,
@@ -53,6 +58,9 @@ async function run(language, code, mode, caseIds, onQueued) {
     batches++;
     assert.ok(batches < 10);
   }
+  console.log(
+    `Finished ${language} ${mode}: ${data.results.map((r) => r.status).join(", ")}`,
+  );
   return { ...data, batches, jobId };
 }
 
