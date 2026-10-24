@@ -523,7 +523,7 @@ function App() {
           <span className="brand-icon">
             <Code2 size={21} />
           </span>
-          davidsprep
+          davidprep
         </button>
 
         <button
@@ -1948,7 +1948,7 @@ function AccessGate() {
         }}
       >
         <Code2 size={30} />
-        <h1>DavidsPrep</h1>
+        <h1>davidprep</h1>
         <label className="field-label">
           Password
           <input

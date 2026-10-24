@@ -37,11 +37,12 @@ Personal site built with Next.js, React, TypeScript, Three.js, and React Three F
 
 ## Prep
 
-- `/prep` serves the existing practice UI from a separate Vite build; its branding stays DavidsPrep. `prep/hosted/` implements the Next API and Sandbox runner. `prep/server/` is the legacy standalone local backend.
+- `/prep` serves the existing practice UI from a separate Vite build; its branding stays davidprep. `prep/hosted/` implements the Next API and Sandbox runner. `prep/server/` is the legacy standalone local backend.
 - `npm run dev` and `npm run build` build the UI first. Generated `public/prep-ui/` is ignored by Git. Keep private problem data and local credentials out of both Git and Vercel uploads.
 - Supabase project `prep` stores the library, all visible cases, sources, work, notes, submissions, sessions, and execution jobs. Schema changes live in `supabase/migrations/`. `PREP_*` environment variables are server-only; pull local values with the Vercel CLI.
 - Vercel Sandbox runs one fresh, non-persistent, network-disabled VM per batch. Its snapshot includes Python/pytest and C++20. Never put storage credentials inside the guest. Submit always runs the whole available suite; no hidden tests.
 - With a server running, `npm run test:prep` checks HTTP behavior and persistence across a separate server restart. Tests use temporary problems and clean them up. See `prep/INTEGRATION.md` for hosted setup and limits.
+- Compatible PostCSS/source-map-js and CLI-config Zod overrides address advisories in upstream dependency pins. Review those overrides when upgrading Next or the Sandbox SDK. Next is on the patched 15.5.28 release.
 
 ## Resume
 

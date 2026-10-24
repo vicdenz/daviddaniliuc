@@ -32,7 +32,7 @@ async function call(path, method = "GET", body) {
   const data = await response.json();
   return { response, data };
 }
-async function run(language, code, mode, caseIds) {
+async function run(language, code, mode, caseIds, onQueued) {
   let { response, data } = await call(`/problems/${id}/run`, "POST", {
     language,
     code,
@@ -40,6 +40,8 @@ async function run(language, code, mode, caseIds) {
     caseIds,
   });
   assert.equal(response.status, 202, JSON.stringify(data));
+  const jobId = data.jobId;
+  if (onQueued) await onQueued(jobId);
   let batches = 0;
   while (data.pending) {
     ({ response, data } = await call(
@@ -51,15 +53,29 @@ async function run(language, code, mode, caseIds) {
     batches++;
     assert.ok(batches < 10);
   }
-  return { ...data, batches };
+  return { ...data, batches, jobId };
 }
 
 test(
   "hosted prep preserves access controls, visible cases, persistence, and Python/C++ verdicts",
   { timeout: 240000 },
   async () => {
-    assert.equal((await fetch(base + "/prep")).status, 200);
+    const page = await fetch(base + "/prep");
+    assert.equal(page.status, 200);
+    assert.match(await page.text(), /<title>davidprep<\/title>/);
     assert.equal((await call("/problems")).response.status, 401);
+    const unauthenticatedBody = await fetch(
+      base + "/prep/api/problems/unknown/cases",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Content-Encoding": "gzip",
+        },
+        body: "invalid compressed body",
+      },
+    );
+    assert.equal(unauthenticatedBody.status, 401);
     const csrf = await fetch(base + "/prep/api/auth/login", {
       method: "POST",
       headers: {
@@ -129,29 +145,25 @@ test(
     try {
       assert.equal(
         (
-          await db
-            .from("prep_cases")
-            .insert(
-              [...cases, native].map((c) => ({
-                id: c.id,
-                problem_id: id,
-                payload: c,
-              })),
-            )
+          await db.from("prep_cases").insert(
+            [...cases, native].map((c) => ({
+              id: c.id,
+              problem_id: id,
+              payload: c,
+            })),
+          )
         ).error,
         null,
       );
       assert.equal(
         (
-          await db
-            .from("prep_artifacts")
-            .insert({
-              id: randomUUID(),
-              problem_id: id,
-              path: id + "/test_main.py",
-              hash: "fixture",
-              content: native.input,
-            })
+          await db.from("prep_artifacts").insert({
+            id: randomUUID(),
+            problem_id: id,
+            path: id + "/test_main.py",
+            hash: "fixture",
+            content: native.input,
+          })
         ).error,
         null,
       );
@@ -222,7 +234,23 @@ test(
         JSON.stringify(prepared.data),
       );
       assert.match(prepared.data.code, /class Solution/);
-      const submit = await run("python", py, "submit", [cases[0].id]);
+      const currentEditor = py + "# edit saved after the run was queued\n";
+      const submit = await run(
+        "python",
+        py,
+        "submit",
+        [cases[0].id],
+        async () => {
+          await call(`/problems/${id}/work`, "PUT", {
+            language: "python",
+            code: currentEditor,
+          });
+          await call(`/problems/${id}/progress`, "PUT", {
+            notes: "newer note",
+            status: "attempted",
+          });
+        },
+      );
       assert.equal(submit.total, 7); // Submit ignores a restricted selection.
       assert.equal(submit.accepted, true, JSON.stringify(submit));
       assert.ok(submit.batches >= 2);
@@ -231,6 +259,31 @@ test(
         (await call(`/problems/${id}`)).data.progress.status,
         "solved",
       );
+      const afterRun = (await call(`/problems/${id}`)).data;
+      assert.equal(afterRun.work.python, currentEditor);
+      assert.equal(afterRun.progress.notes, "newer note");
+      await call(`/problems/${id}/progress`, "PUT", {
+        notes: "notes edited after solving",
+      });
+      assert.equal(
+        (await call(`/problems/${id}`)).data.progress.status,
+        "solved",
+      );
+      const replay = await call(`/jobs/${submit.jobId}/advance`, "POST", {});
+      assert.equal(replay.data.submissionId, submit.submissionId);
+      assert.equal(replay.data.results.length, 7);
+      const repeatedCommit = await db.rpc("prep_finish_job", {
+        job_id: submit.jobId,
+        lease_token: 0,
+        final_result: {},
+      });
+      assert.equal(repeatedCommit.error, null);
+      assert.equal(repeatedCommit.data.submissionId, submit.submissionId);
+      const submissionCount = await db
+        .from("prep_submissions")
+        .select("id", { count: "exact", head: true })
+        .eq("problem_id", id);
+      assert.equal(submissionCount.count, 1);
       const cxx = await run("cpp", cpp, "run", [cases[0].id]);
       assert.equal(cxx.accepted, true, JSON.stringify(cxx));
       const unsupported = await run("cpp", cpp, "run", [native.id]);
@@ -291,6 +344,23 @@ test(
         py,
       );
       assert.equal((await call(`/problems/${id}/export`)).data.cases.length, 7);
+      const queuedChange = await call(`/problems/${id}/run`, "POST", {
+        language: "python",
+        code: py,
+        mode: "run",
+        caseIds: [cases[0].id],
+      });
+      await call(`/problems/${id}/cases/${cases[0].id}`, "PUT", {
+        ...cases[0],
+        expected: 99,
+      });
+      const changed = await call(
+        `/jobs/${queuedChange.data.jobId}/advance`,
+        "POST",
+        {},
+      );
+      assert.equal(changed.response.status, 409);
+      assert.match(changed.data.error, /test changed/);
       await call("/auth/logout", "POST", {});
       assert.equal((await call("/problems")).response.status, 401);
     } finally {

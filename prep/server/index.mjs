@@ -418,6 +418,6 @@ if (
 ) {
   const port = Number(process.env.PORT || 4310);
   createApp().listen(port, "127.0.0.1", () =>
-    console.log(`DavidsPrep: http://127.0.0.1:${port}${config.basePath}/`),
+    console.log(`davidprep: http://127.0.0.1:${port}${config.basePath}/`),
   );
 }

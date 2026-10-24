@@ -20,7 +20,7 @@
     "@react-three/fiber": "^9.3.0",
     "@supabase/supabase-js": "^2.118.0",
     "@vercel/sandbox": "^3.9.0",
-    "next": "^15.5.23",
+    "next": "^15.5.28",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "rough-notation": "^0.5.1",
@@ -33,8 +33,15 @@
     "@types/react-dom": "^19",
     "@types/three": "^0.179.0",
     "eslint": "^9",
-    "eslint-config-next": "^15.5.23",
+    "eslint-config-next": "^15.5.28",
     "raw-loader": "^4.0.2",
     "typescript": "^5"
+  },
+  "overrides": {
+    "postcss": "^8.5.23",
+    "source-map-js": "^1.2.2",
+    "@vercel/cli-config": {
+      "zod": "^4.6.6"
+    }
   }
 }

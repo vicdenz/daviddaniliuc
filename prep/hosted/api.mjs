@@ -42,13 +42,17 @@ const getCases = async (id, summaries = false) => {
   for (let offset = 0; ; offset += 1000) {
     const page = await checked(
       table(summaries ? "case_summaries" : "cases")
-        .select("payload")
+        .select(summaries ? "payload,revision" : "payload")
         .eq("problem_id", id)
         .eq("deleted", false)
         .order("position")
         .range(offset, offset + 999),
     );
-    rows.push(...page.map((r) => r.payload));
+    rows.push(
+      ...page.map((r) =>
+        summaries ? { ...r.payload, revision: r.revision } : r.payload,
+      ),
+    );
     if (page.length < 1000) return rows;
   }
 };
@@ -112,21 +116,6 @@ export async function handle(request) {
       if (Number(request.headers.get("content-length") || 0) > 4 * 1024 * 1024)
         fail("Request is too large.", 413);
     }
-    let body = {};
-    if (["POST", "PUT"].includes(method)) {
-      const raw = Buffer.from(await request.arrayBuffer());
-      if (raw.length > 4 * 1024 * 1024) fail("Request is too large.", 413);
-      try {
-        body = JSON.parse(
-          (request.headers.get("content-encoding") === "gzip"
-            ? gunzipSync(raw, { maxOutputLength: 32 * 1024 * 1024 })
-            : raw
-          ).toString("utf8"),
-        );
-      } catch {
-        fail("Invalid JSON or request larger than 32 MB.");
-      }
-    }
     const password = process.env.PREP_PASSWORD,
       secret = process.env.PREP_SESSION_SECRET;
     if (!password || !secret || secret.length < 32)
@@ -151,7 +140,33 @@ export async function handle(request) {
           .gt("expires", Date.now())
           .maybeSingle(),
       );
-    if (route.join("/") === "auth/login" && method === "POST") {
+    const authRoute = route.join("/");
+    const isLogin = authRoute === "auth/login" && method === "POST";
+    if (
+      !session &&
+      !isLogin &&
+      !["auth/session", "auth/logout"].includes(authRoute)
+    )
+      fail("Sign in to continue.", 401);
+    let body = {};
+    if ((session || isLogin) && ["POST", "PUT"].includes(method)) {
+      const raw = Buffer.from(await request.arrayBuffer());
+      if (raw.length > (isLogin ? 4096 : 4 * 1024 * 1024))
+        fail("Request is too large.", 413);
+      try {
+        body = JSON.parse(
+          (request.headers.get("content-encoding") === "gzip"
+            ? gunzipSync(raw, {
+                maxOutputLength: isLogin ? 4096 : 32 * 1024 * 1024,
+              })
+            : raw
+          ).toString("utf8"),
+        );
+      } catch {
+        fail("Invalid JSON or request larger than the allowed size.");
+      }
+    }
+    if (isLogin) {
       const ip =
         request.headers.get("x-forwarded-for")?.split(",")[0].trim() || "local";
       const clientKey = hash(ip + secret);
@@ -330,31 +345,33 @@ export async function handle(request) {
           updated: new Date().toISOString(),
         }),
       );
-      const progress = await getProgress(p.id);
-      if (progress.status === "todo")
-        await checked(
-          table("progress").upsert({
-            problem_id: p.id,
-            ...progress,
-            status: "attempted",
-          }),
-        );
+      await checked(
+        table("progress").upsert(
+          { problem_id: p.id, status: "attempted" },
+          { onConflict: "problem_id", ignoreDuplicates: true },
+        ),
+      );
+      await checked(
+        table("progress")
+          .update({ status: "attempted" })
+          .eq("problem_id", p.id)
+          .eq("status", "todo"),
+      );
       return reply({ saved: true });
     }
     if (route[2] === "progress" && method === "PUT") {
-      const old = await getProgress(p.id),
-        status = body.status ?? old.status;
       if (
         typeof body.notes !== "string" ||
         body.notes.length > 1000000 ||
-        !["todo", "attempted", "solved"].includes(status)
+        (body.status !== undefined &&
+          !["todo", "attempted", "solved"].includes(body.status))
       )
         fail("Invalid progress.");
       await checked(
         table("progress").upsert({
           problem_id: p.id,
           notes: body.notes,
-          status,
+          ...(body.status === undefined ? {} : { status: body.status }),
           updated: new Date().toISOString(),
         }),
       );
@@ -454,6 +471,9 @@ export async function handle(request) {
           code,
           mode,
           case_ids: selected.map((c) => c.id),
+          case_revisions: Object.fromEntries(
+            selected.map((c) => [c.id, c.revision]),
+          ),
         }),
       );
       return reply({ jobId: id, pending: true }, 202);
@@ -476,7 +496,15 @@ async function advanceJob(id) {
     mode: job.mode,
     submissionId,
   });
-  if (job.state === "complete") return summary(job.results, job.submission_id);
+  if (job.state === "complete") {
+    const saved = await checked(
+      table("submissions")
+        .select("result")
+        .eq("id", job.submission_id)
+        .single(),
+    );
+    return { ...saved.result, submissionId: job.submission_id };
+  }
   const claimed = await checked(
     table("jobs")
       .update({
@@ -500,6 +528,14 @@ async function advanceJob(id) {
       if (!c)
         fail(
           "A selected test was removed during this run. Start the run again.",
+        );
+      if (
+        job.case_revisions[caseId] &&
+        job.case_revisions[caseId] !== c.revision
+      )
+        fail(
+          "A selected test changed during this run. Start the run again.",
+          409,
         );
       const cost = (c.timeout || 8) * (c.growthFactor ? 2 : 1);
       if (
@@ -540,59 +576,25 @@ async function advanceJob(id) {
             lease_expires: 0,
             updated: new Date().toISOString(),
           })
-          .eq("id", id),
+          .eq("id", id)
+          .eq("lease_expires", job.lease_expires),
       );
       return { jobId: id, pending: true };
     }
-    const result = summary(results);
-    const submission = await checked(
-      table("submissions")
-        .insert({
-          problem_id: p.id,
-          language: job.language,
-          code: job.code,
-          mode: job.mode,
-          result,
-        })
-        .select("id")
-        .single(),
-    );
-    await checked(
-      table("work").upsert({
-        problem_id: p.id,
-        language: job.language,
-        code: job.code,
-        updated: new Date().toISOString(),
+    return await checked(
+      db().rpc("prep_finish_job", {
+        job_id: id,
+        lease_token: job.lease_expires,
+        final_result: summary(results),
       }),
     );
-    const old = await getProgress(p.id);
-    await checked(
-      table("progress").upsert({
-        problem_id: p.id,
-        ...old,
-        status:
-          job.mode === "submit" && result.accepted
-            ? "solved"
-            : old.status === "todo"
-              ? "attempted"
-              : old.status,
-      }),
-    );
+  } catch (e) {
     await checked(
       table("jobs")
-        .update({
-          results,
-          cursor,
-          state: "complete",
-          submission_id: submission.id,
-          lease_expires: 0,
-          updated: new Date().toISOString(),
-        })
-        .eq("id", id),
+        .update({ lease_expires: 0 })
+        .eq("id", id)
+        .eq("lease_expires", job.lease_expires),
     );
-    return { ...result, submissionId: submission.id };
-  } catch (e) {
-    await checked(table("jobs").update({ lease_expires: 0 }).eq("id", id));
     throw e;
   }
 }
