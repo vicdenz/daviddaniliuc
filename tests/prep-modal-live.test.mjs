@@ -11,12 +11,13 @@ const configured = executionStatus({
 test(
   "live Modal image runs unprivileged, blocks networking, and executes Python/C++ with visible verdicts",
   {
-    skip: configured
-      ? false
-      : "Modal credentials and PREP_MODAL_IMAGE_ID are required",
     timeout: 240000,
   },
   async () => {
+    assert.ok(
+      configured,
+      "Modal credentials and PREP_MODAL_IMAGE_ID are required. Authenticate and complete prep/MODAL.md before running the live validation command.",
+    );
     const sandbox = await createModalSandbox();
     try {
       const probe = `import json, os, socket, sys, pytest

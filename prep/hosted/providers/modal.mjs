@@ -5,7 +5,7 @@ import {
   SANDBOX_TIMEOUT_MS,
 } from "./config.mjs";
 
-// A fresh client belongs to each batch; no Modal or Supabase secrets enter it.
+// A fresh client belongs to each batch; no credentials enter the guest.
 export async function createModalSandbox(
   env = process.env,
   makeClient = (options) => new ModalClient(options),
@@ -40,6 +40,20 @@ export async function createModalSandbox(
       blockNetwork: true,
       includeOidcIdentityToken: false,
     });
+    // Fail closed if an incorrectly configured image ignores the non-root USER.
+    // This runs before uploading or executing any submitted code.
+    const identity = await sandbox.exec(
+      [
+        "/opt/prep/runtime/bin/python",
+        "-c",
+        "import os, sys; sys.exit(1 if os.getuid() == 0 or os.geteuid() == 0 else 0)",
+      ],
+      { timeoutMs: 5000, stdout: "ignore", stderr: "ignore" },
+    );
+    if ((await identity.wait()) !== 0)
+      throw new Error(
+        "Modal runtime must contain the prep Python environment and run as a non-root user. Rebuild it with npm run setup:prep:modal.",
+      );
     return {
       cwd: "/work",
       python: "/opt/prep/runtime/bin/python",

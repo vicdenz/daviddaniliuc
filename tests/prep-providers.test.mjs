@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { createModalSandbox } from "../prep/hosted/providers/modal.mjs";
 import {
   executionProvider,
@@ -26,6 +27,10 @@ function modalFixture() {
       readBytes: async (path) => calls.files.get(path),
     },
     exec: async (command, params) => {
+      if (command[2]?.includes("os.getuid()")) {
+        calls.identity = { command, params };
+        return { wait: async () => calls.identityExit ?? 0 };
+      }
       calls.command = command;
       calls.commandParams = params;
       return { wait: async () => 7 };
@@ -146,6 +151,50 @@ test("Modal enforces a fresh, network-blocked Sandbox with hard CPU/memory/lifet
   assert.equal(f.calls.terminated, 1);
   assert.deepEqual(f.calls.terminateParams, { wait: true });
   assert.equal(f.calls.closed, 1);
+});
+
+test("Modal rejects root images before uploading code and cleans up failed identity probes", async () => {
+  const f = modalFixture();
+  f.calls.identityExit = 1;
+  await assert.rejects(createModalSandbox(env, f.makeClient), /non-root user/);
+  assert.equal(f.calls.files.size, 0);
+  assert.equal(f.calls.terminated, 1);
+  assert.equal(f.calls.closed, 1);
+  assert.equal(f.calls.identity.params.timeoutMs, 5000);
+  const g = modalFixture();
+  g.remote.exec = async () => {
+    throw new Error("probe timed out");
+  };
+  await assert.rejects(
+    createModalSandbox(env, g.makeClient),
+    /probe timed out/,
+  );
+  assert.equal(g.calls.terminated, 1);
+  assert.equal(g.calls.closed, 1);
+});
+
+test("the explicit live Modal command fails when credentials are missing instead of reporting success", () => {
+  const childEnv = {
+    ...process.env,
+    MODAL_TOKEN_ID: "",
+    MODAL_TOKEN_SECRET: "",
+    PREP_MODAL_IMAGE_ID: "",
+  };
+  delete childEnv.NODE_TEST_CONTEXT;
+  const result = spawnSync(
+    process.execPath,
+    ["--test", "tests/prep-modal-live.test.mjs"],
+    {
+      encoding: "utf8",
+      env: childEnv,
+      timeout: 10000,
+    },
+  );
+  assert.equal(result.status, 1, result.stdout + result.stderr);
+  assert.match(
+    result.stdout + result.stderr,
+    /Modal credentials and PREP_MODAL_IMAGE_ID are required/,
+  );
 });
 
 test("Modal closes client on creation failure and on failed termination", async () => {
