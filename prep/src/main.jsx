@@ -6,6 +6,7 @@ import EditorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import UsageStatus from "./UsageStatus.jsx";
+import { createSaveQueue } from "./save-queue.mjs";
 import {
   formatValue,
   formatArguments,
@@ -210,29 +211,15 @@ function App() {
     saveTimer = useRef(null),
     noteTimer = useRef(null),
     currentId = useRef(null),
+    languageRef = useRef(language),
+    runningRef = useRef(false),
+    saveQueue = useRef(null),
     workspace = useRef(null),
     right = useRef(null),
     inputRef = useRef(null);
-  useEffect(() => {
-    const leave = () => {
-      if (noteDirty.current && currentId.current)
-        fetch(apiPath("/problems/" + currentId.current + "/progress"), {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ notes: notesRef.current }),
-          keepalive: true,
-        });
-      if (dirty.current && currentId.current)
-        fetch(apiPath("/problems/" + currentId.current + "/work"), {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ language, code: codeRef.current }),
-          keepalive: true,
-        });
-    };
-    window.addEventListener("pagehide", leave);
-    return () => window.removeEventListener("pagehide", leave);
-  }, [language]);
+  if (!saveQueue.current) saveQueue.current = createSaveQueue();
+  // Edits are synchronously backed up in localStorage. An unload-time fetch
+  // could overtake an in-flight save and overwrite the latest buffer.
   const refresh = useCallback(
     () =>
       api("/problems")
@@ -275,29 +262,49 @@ function App() {
   const persist = useCallback(async (id, lang, text) => {
     if (!id) return;
     try {
-      await send(`/problems/${id}/work`, { language: lang, code: text });
-      if (getDraft(`prep-draft:${id}:${lang}`) === text)
-        removeDraft(`prep-draft:${id}:${lang}`);
-      if (currentId.current === id) setSaveState("Saved locally");
+      await saveQueue.current(`code:${id}:${lang}`, () =>
+        send(`/problems/${id}/work`, { language: lang, code: text }),
+      );
+      const key = `prep-draft:${id}:${lang}`;
+      if (getDraft(key) === text) removeDraft(key);
+      if (
+        currentId.current === id &&
+        languageRef.current === lang &&
+        codeRef.current === text
+      ) {
+        dirty.current = false;
+        setSaveState("Saved locally");
+      }
     } catch (e) {
-      setError(e.message);
-      setSaveState("Save failed");
+      if (currentId.current === id && languageRef.current === lang) {
+        setError(e.message);
+        setSaveState("Save failed");
+      }
       throw e;
     }
   }, []);
+  async function persistNotes(id, value, status) {
+    await saveQueue.current(`notes:${id}`, () =>
+      send(`/problems/${id}/progress`, {
+        notes: value,
+        ...(status === undefined ? {} : { status }),
+      }),
+    );
+    const key = `prep-notes:${id}`;
+    if (getDraft(key) === value) removeDraft(key);
+    if (currentId.current === id && notesRef.current === value)
+      noteDirty.current = false;
+  }
   async function flush() {
     clearTimeout(saveTimer.current);
     clearTimeout(noteTimer.current);
-    if (currentId.current && noteDirty.current) {
-      await send(`/problems/${currentId.current}/progress`, {
-        notes: notesRef.current,
-      });
-      noteDirty.current = false;
-    }
-    if (currentId.current && dirty.current) {
-      await persist(currentId.current, language, codeRef.current);
-      dirty.current = false;
-    }
+    const id = currentId.current,
+      lang = languageRef.current;
+    const writes = [];
+    if (id && noteDirty.current)
+      writes.push(persistNotes(id, notesRef.current));
+    if (id && dirty.current) writes.push(persist(id, lang, codeRef.current));
+    await Promise.all(writes);
   }
   useEffect(() => {
     if (!selected) return;
@@ -310,6 +317,7 @@ function App() {
         setProblem(p);
         workRef.current = { ...p.work };
         const lang = p.languages.includes(language) ? language : "python";
+        languageRef.current = lang;
         setLanguage(lang);
         const draft = getDraft(`prep-draft:${p.id}:${lang}`);
         const value = draft ?? p.work[lang] ?? p.starters[lang];
@@ -317,9 +325,10 @@ function App() {
         codeRef.current = value;
         workRef.current[lang] = value;
         setCode(value);
-        setNotes(p.progress.notes);
-        notesRef.current = p.progress.notes;
-        noteDirty.current = false;
+        const noteDraft = getDraft(`prep-notes:${p.id}`);
+        setNotes(noteDraft ?? p.progress.notes);
+        notesRef.current = noteDraft ?? p.progress.notes;
+        noteDirty.current = noteDraft !== null;
         setResult(p.submissions[0]?.result || null);
         setActiveCase(p.cases[0]?.id || null);
         setCaseData(null);
@@ -364,14 +373,18 @@ function App() {
     saveTimer.current = setTimeout(async () => {
       try {
         await persist(id, lang, text);
-        if (codeRef.current === text) dirty.current = false;
       } catch {}
     }, 450);
   }
   async function changeLanguage(lang) {
     await flush();
+    languageRef.current = lang;
     setLanguage(lang);
-    const text = workRef.current[lang] ?? problem.starters[lang];
+    const draft = getDraft(`prep-draft:${problem.id}:${lang}`);
+    const text = draft ?? workRef.current[lang] ?? problem.starters[lang];
+    workRef.current[lang] = text;
+    dirty.current = draft !== null;
+    setSaveState(draft !== null ? "Recovered local draft" : "Saved locally");
     codeRef.current = text;
     setCode(text);
   }
@@ -387,45 +400,54 @@ function App() {
     refresh();
   }
   async function run(mode = "run", ids = null) {
-    if (!problem || running) return;
-    await flush();
+    if (!problem || runningRef.current) return;
+    const id = problem.id,
+      lang = languageRef.current,
+      source = codeRef.current;
+    runningRef.current = true;
     setRunning(true);
     setRunningMode(mode);
     setCaseTab("Results");
     setError("");
     try {
+      await flush();
       const r = await send(
-        `/problems/${problem.id}/run`,
-        { language, code: codeRef.current, mode, caseIds: ids },
+        `/problems/${id}/run`,
+        { language: lang, code: source, mode, caseIds: ids },
         "POST",
       );
-      setResult(r);
-      setProblem((p) => ({
-        ...p,
-        progress: {
-          ...p.progress,
-          status:
-            mode === "submit" && r.accepted
-              ? "solved"
-              : p.progress.status === "todo"
-                ? "attempted"
-                : p.progress.status,
-        },
-        submissions: [
-          {
-            id: r.submissionId,
-            language,
-            mode,
-            created: new Date().toISOString(),
-            result: r,
-          },
-          ...p.submissions,
-        ],
-      }));
+      if (currentId.current === id) setResult(r);
+      setProblem((p) =>
+        p?.id !== id
+          ? p
+          : {
+              ...p,
+              progress: {
+                ...p.progress,
+                status:
+                  mode === "submit" && r.accepted
+                    ? "solved"
+                    : p.progress.status === "todo"
+                      ? "attempted"
+                      : p.progress.status,
+              },
+              submissions: [
+                {
+                  id: r.submissionId,
+                  language: lang,
+                  mode,
+                  created: new Date().toISOString(),
+                  result: r,
+                },
+                ...p.submissions,
+              ],
+            },
+      );
       refresh();
     } catch (e) {
-      setError(e.message);
+      if (currentId.current === id) setError(e.message);
     } finally {
+      runningRef.current = false;
       setRunning(false);
     }
   }
@@ -443,10 +465,11 @@ function App() {
     return () => window.removeEventListener("keydown", fn);
   }, [problem, language, activeCase, running]);
   async function loadSaved(source, lang = language) {
+    const id = problem.id;
     await flush();
     try {
       const prepared = await send(
-        `/problems/${problem.id}/prepare`,
+        `/problems/${id}/prepare`,
         { code: source, language: lang },
         "POST",
       );
@@ -455,33 +478,38 @@ function App() {
       setError(e.message);
       return;
     }
+    if (currentId.current !== id) return;
+    languageRef.current = lang;
     setLanguage(lang);
     setCode(source);
     codeRef.current = source;
     workRef.current[lang] = source;
-    await persist(problem.id, lang, source);
-    dirty.current = false;
+    dirty.current = true;
+    saveDraft(`prep-draft:${id}:${lang}`, source);
+    await persist(id, lang, source);
   }
   function updateNotes(value) {
     noteDirty.current = true;
     notesRef.current = value;
+    saveDraft(`prep-notes:${problem.id}`, value);
     setNotes(value);
     clearTimeout(noteTimer.current);
     const id = problem.id;
     noteTimer.current = setTimeout(
       () =>
-        send(`/problems/${id}/progress`, { notes: value })
-          .then(() => {
-            if (notesRef.current === value) noteDirty.current = false;
-          })
-          .catch((e) => setError(e.message)),
+        persistNotes(id, value).catch((e) => {
+          if (currentId.current === id) setError(e.message);
+        }),
       450,
     );
   }
   async function changeStatus(value) {
+    const id = problem.id;
     clearTimeout(noteTimer.current);
-    await send(`/problems/${problem.id}/progress`, { notes, status: value });
-    setProblem((p) => ({ ...p, progress: { ...p.progress, status: value } }));
+    await persistNotes(id, notesRef.current, value);
+    setProblem((p) =>
+      p?.id !== id ? p : { ...p, progress: { ...p.progress, status: value } },
+    );
     refresh();
   }
   async function reloadCases(choose) {
