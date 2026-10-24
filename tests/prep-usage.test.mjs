@@ -26,3 +26,23 @@ test("daily recommended budget reports actual overage while keeping the bar boun
   assert.equal(over.rollingPercent, 100);
   assert.equal(cpuTime(18000000), "5h 0m");
 });
+
+test("Modal budget uses estimated dollars with visible overage rather than Vercel CPU hours", async () => {
+  const { dollars } = await import("../prep/src/usage-format.mjs");
+  const modal = {
+    provider: "modal",
+    todayCostUsd: 0.5,
+    dailyBudgetUsd: 1,
+    rollingCostUsd: 15,
+    rollingBudgetUsd: 30,
+  };
+  assert.equal(usageView(modal).percentage, "50%");
+  const over = usageView({ ...modal, todayCostUsd: 1.5, rollingCostUsd: 45 });
+  assert.equal(over.percentage, "150%");
+  assert.equal(over.width, 100);
+  assert.equal(over.overUsd, 0.5);
+  assert.equal(over.rollingPercent, 150);
+  assert.equal(dollars(0), "$0.000");
+  assert.equal(dollars(0.00001), "<$0.001");
+  assert.equal(dollars(0.5), "$0.500");
+});

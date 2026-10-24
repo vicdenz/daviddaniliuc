@@ -108,8 +108,14 @@ test(
     assert.match(login.response.headers.get("set-cookie"), /Path=\/prep/);
     assert.equal((await call("/auth/session")).data.authenticated, true);
     const usageBefore = (await call("/usage")).data;
-    assert.equal(usageBefore.dailyBudgetMs, 600000);
-    assert.equal(usageBefore.rollingBudgetMs, 18000000);
+    const modal = usageBefore.provider === "modal";
+    if (modal) {
+      assert.equal(usageBefore.dailyBudgetUsd, 1);
+      assert.equal(usageBefore.rollingBudgetUsd, 30);
+    } else {
+      assert.equal(usageBefore.dailyBudgetMs, 600000);
+      assert.equal(usageBefore.rollingBudgetMs, 18000000);
+    }
     assert.equal(usageBefore.scope, "davidprep");
     const library = (await call("/problems")).data;
     assert.ok(library.length >= 36);
@@ -375,11 +381,14 @@ test(
       assert.equal(changed.response.status, 409);
       assert.match(changed.data.error, /test changed/);
       const usageAfter = (await call("/usage")).data;
-      assert.ok(usageAfter.rollingCpuMs > usageBefore.rollingCpuMs);
+      const usageField = modal ? "rollingCostUsd" : "rollingCpuMs";
+      assert.ok(usageAfter[usageField] > usageBefore[usageField]);
       assert.equal(usageAfter.pending, 0);
       assert.equal(typeof usageAfter.todayEstimated, "boolean");
       console.log(
-        `Compute tracked: ${Math.round(usageAfter.rollingCpuMs - usageBefore.rollingCpuMs)}ms`,
+        modal
+          ? `Estimated compute cost tracked: $${(usageAfter.rollingCostUsd - usageBefore.rollingCostUsd).toFixed(6)}`
+          : `Compute tracked: ${Math.round(usageAfter.rollingCpuMs - usageBefore.rollingCpuMs)}ms`,
       );
       await call("/auth/logout", "POST", {});
       assert.equal((await call("/problems")).response.status, 401);
