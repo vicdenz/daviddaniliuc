@@ -27,13 +27,23 @@ Personal site built with Next.js, React, TypeScript, Three.js, and React Three F
 ## Deployment and audio
 
 - Deploy from the local checkout. Automatic Git deployments are disabled in `vercel.json`; merging alone does not publish. Fresh clones need the MP3s restored from a local backup.
-- CLI setup: `npx --yes vercel@59.17.0 login`, then `npx --yes vercel@59.17.0 link`. Select the existing `david-daniliucs-projects/daviddaniliuc` project.
-- CLI uploads include Git-ignored audio. `.vercelignore` excludes secrets and generated files. After upload-rule changes, verify with `npx --yes vercel@59.17.0 deploy --dry --format=json`.
+- CLI setup: `npx --yes vercel@65.2.0 login`, then `npx --yes vercel@65.2.0 link`. Select the existing `david-daniliucs-projects/daviddaniliuc` project.
+- CLI uploads include Git-ignored audio. `.vercelignore` excludes secrets and generated files. After upload-rule changes, verify with `npx --yes vercel@65.2.0 deploy --dry --format=json`.
 - Keep `private/` limited to audio. The JSON manifest is tracked; MP3s are ignored. Never force-add MP3s or rewrite Git history without an explicit request.
 - The manifest is the single track list for the player, endpoint and deployment check. Use unique IDs (`session` is reserved). `src/lib/music.ts` passes only display metadata and playback URLs to the client.
 - `/api/audio/[trackId]` streams local files with range support. Next.js `outputFileTracingIncludes` bundles the MP3s. Preserve cookie validation, session renewal and private/no-store caching.
 - Vercel Preview and Production require `AUDIO_SESSION_SECRET` of at least 32 characters. Development has a local fallback. Environment changes require redeployment.
 - Public playback can still be captured; historical Git copies remain accessible.
+
+## Prep
+
+- `/prep` serves the existing practice UI from a separate Vite build; its branding stays davidprep. `prep/hosted/` implements the Next API and Sandbox runner. `prep/server/` is the legacy standalone local backend.
+- `npm run dev` and `npm run build` build the UI first. Generated `public/prep-ui/` is ignored by Git. Keep private problem data and local credentials out of both Git and Vercel uploads.
+- Supabase project `prep` stores the library, all visible cases, sources, work, notes, submissions, sessions, and execution jobs. Schema changes live in `supabase/migrations/`. `PREP_*` environment variables are server-only; pull local values with the Vercel CLI.
+- Vercel Sandbox runs one fresh, non-persistent, network-disabled VM per batch. Its snapshot includes Python/pytest and C++20. Never put storage credentials inside the guest. Submit always runs the whole available suite; no hidden tests.
+- With a server running, `npm run test:prep` checks HTTP behavior and persistence across a separate server restart. Tests use temporary problems and clean them up. See `prep/INTEGRATION.md` for hosted setup and limits.
+- The header's daily compute target is advisory, not a provider cutoff. `prep_usage` records per-session SDK CPU readings and explicit estimates; `/prep/api/usage` is private. It tracks this app from the migration onward, not historical account-wide billing. Keep those qualifications visible when changing the meter.
+- Compatible PostCSS/source-map-js and CLI-config Zod overrides address advisories in upstream dependency pins. Review those overrides when upgrading Next or the Sandbox SDK. Next is on the patched 15.5.28 release.
 
 ## Resume
 

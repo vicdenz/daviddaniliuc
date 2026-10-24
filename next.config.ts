@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
 	},
 	outputFileTracingIncludes: {
 		"/api/audio/*": ["./private/audio/*.mp3"],
+		"/prep/api/*": ["./prep/runner/*.py", "./prep/vendor/json.hpp"],
 	},
 	webpack: (config) => {
 		config.module.rules.push({
