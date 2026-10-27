@@ -18,6 +18,34 @@ For local website development, run `npx vercel env pull .env.local` after linkin
 
 The Vercel project is on Hobby: Sandbox has a free monthly usage allowance and pauses when exhausted. Supabase is on Free and may pause after low activity. Keep the local SQLite backup. The copied `deploy/` templates describe an obsolete standalone hosting approach.
 
+## Adding private questions
+
+Use the ignored `prep/docs/problem.example.json` format: a stable problem ID,
+authorized statement with source qualifications, metadata, Python/C++ class
+starters, callable argument types, and visible function cases. Test inputs are
+positional argument arrays. Include supplied examples and independently checked
+edge cases; do not invent source constraints or a difficulty rating.
+
+Import and validate the private manifest locally, then copy only that problem
+into hosted Prep:
+
+```sh
+python3 prep/scripts/import_manifest.py prep/problems/collection/question.json
+python3 scripts/import_prep_problem.py question-id
+python3 scripts/import_prep_problem.py question-id --apply
+```
+
+The hosted importer defaults to a count-only preview and reads SQLite without
+writing to it. `--apply` uses `psql` and the existing ignored
+`prep/.env.supabase.local` and `supabase/.temp/pooler-url` connection files. It
+updates problem metadata and inserts missing cases, artifacts, and starter work
+in one transaction. Reimports preserve existing cases (including edits and
+deletions), saved code, notes, progress, and submissions. Changed case content
+needs a new case ID or an explicit edit through Prep. Keep manifests, generators,
+solutions, and validation reports in the ignored private folders; never commit
+them to this public repository. Database additions are immediately available to
+the authenticated app and do not require a website deployment.
+
 At setup, Vercel Hobby includes 5 active Sandbox CPU hours, 420 GB-hours of memory, 5,000 creations per month, and 15 GB of snapshot storage. Exceeding an allowance pauses creation rather than adding overage charges. These resources are shared across the account; compilation and full-suite runs consume them. Check [current Sandbox quotas](https://vercel.com/docs/sandbox/pricing) before changing plans. The [Supabase Free plan](https://supabase.com/docs/guides/platform/billing-on-supabase) includes a 500 MB database and 5 GB of egress. No paid plan was enabled.
 
 The header meter tracks this app's Sandbox CPU from the usage migration onward. Each session is recorded before creation, and Vercel's `activeCpuUsageMs` is saved after stopping, including compilation, preparation, and failed tests. Missing measurements use clearly marked conservative estimates; stale pending sessions reserve the maximum four-minute runtime. Day totals use the session's start date in America/Toronto. The daily recommendation is 10 CPU-minutes (five hours divided by 30 days), and crossing it only changes the indicator. The secondary total is a rolling 30-day app total, not the account's exact Vercel billing cycle. Earlier sessions and other projects are excluded; the Vercel dashboard remains authoritative. Usage refreshes after a run, on focus, and every 30 seconds while visible.
