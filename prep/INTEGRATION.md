@@ -4,6 +4,8 @@ The website serves the existing davidprep frontend at `/prep`. Code, environment
 
 The website repository is public. The SQLite snapshot, problem content, reviewed solutions, and legacy import files are Git-ignored and excluded from Vercel uploads. The browser receives private content only through authenticated `/prep/api` requests. Supabase keys never reach the frontend bundle.
 
+For the optional Modal execution provider, see [MODAL.md](MODAL.md). Vercel remains the default until `PREP_EXECUTION_PROVIDER=modal` is explicitly configured.
+
 ## Architecture and setup
 
 - Supabase project `prep` (`bizfbtkhmyswpercocla`, Canada Central) has the private schema in `supabase/migrations/` and the copied problem data. `scripts/migrate_prep_to_supabase.py` seeds an empty schema from the ignored SQLite snapshot; it refuses to overwrite a populated database. The migration was checked row by row against the source for problems, cases, artifacts, and work.

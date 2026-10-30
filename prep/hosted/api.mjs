@@ -1,5 +1,6 @@
 import { getDb } from "./storage.mjs";
 import { getUsage } from "./usage.mjs";
+import { executionStatus } from "./providers/config.mjs";
 import {
   createHash,
   randomBytes,
@@ -213,10 +214,7 @@ export async function handle(request) {
     if (route[0] === "health")
       return reply({
         ok: true,
-        sandbox: {
-          backend: "Vercel Sandbox",
-          available: !!process.env.PREP_CPP_SNAPSHOT_ID,
-        },
+        sandbox: executionStatus(),
       });
     if (route[0] === "migration") {
       const row = await checked(

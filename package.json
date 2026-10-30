@@ -14,12 +14,16 @@
     "start": "next start",
     "lint": "eslint .",
     "build:prep": "node scripts/build_prep.mjs",
-    "test:prep": "node --env-file=.env.local --test tests/prep-http.test.mjs tests/prep-restart.test.mjs tests/prep-usage.test.mjs tests/prep-values.test.mjs tests/prep-workspace.test.mjs"
+    "setup:prep:modal": "node --env-file-if-exists=.env.local scripts/setup_prep_modal.mjs",
+    "test:prep:modal": "node --env-file-if-exists=.env.local --test tests/prep-modal-live.test.mjs",
+    "test:prep:unit": "node --test tests/prep-providers.test.mjs tests/prep-usage.test.mjs tests/prep-values.test.mjs tests/prep-workspace.test.mjs",
+    "test:prep": "node --env-file=.env.local --test tests/prep-http.test.mjs tests/prep-restart.test.mjs tests/prep-providers.test.mjs tests/prep-usage.test.mjs tests/prep-values.test.mjs tests/prep-workspace.test.mjs"
   },
   "dependencies": {
     "@react-three/fiber": "^9.3.0",
     "@supabase/supabase-js": "^2.118.0",
     "@vercel/sandbox": "^3.9.0",
+    "modal": "^0.11.1",
     "next": "^15.5.28",
     "react": "19.1.0",
     "react-dom": "19.1.0",

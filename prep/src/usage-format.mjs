@@ -7,12 +7,23 @@ export function cpuTime(ms) {
 }
 
 export function usageView(data) {
-  const percent = (data.todayCpuMs / data.dailyBudgetMs) * 100;
+  const modal = data.provider === "modal";
+  const today = modal ? data.todayCostUsd : data.todayCpuMs;
+  const budget = modal ? data.dailyBudgetUsd : data.dailyBudgetMs;
+  const rolling = modal ? data.rollingCostUsd : data.rollingCpuMs;
+  const rollingBudget = modal ? data.rollingBudgetUsd : data.rollingBudgetMs;
+  const percent = (today / budget) * 100;
   return {
     percent,
     width: Math.min(100, Math.max(0, percent)),
     percentage: percent > 0 && percent < 1 ? "<1%" : `${Math.round(percent)}%`,
-    overMs: Math.max(0, data.todayCpuMs - data.dailyBudgetMs),
-    rollingPercent: (data.rollingCpuMs / data.rollingBudgetMs) * 100,
+    overMs: modal ? 0 : Math.max(0, today - budget),
+    overUsd: modal ? Math.max(0, today - budget) : 0,
+    rollingPercent: (rolling / rollingBudget) * 100,
   };
+}
+
+export function dollars(value) {
+  if (value > 0 && value < 0.001) return "<$0.001";
+  return `$${value.toFixed(3)}`;
 }
