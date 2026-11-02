@@ -7,7 +7,6 @@ import { MathUtils, ShaderMaterial } from "three";
 import backgroundVertex from "@/components/shaders/vert/background.vert";
 import topographicFragment from "@/components/shaders/frag/topographic-flow.frag";
 import { BACKDROP_ANIMATION } from "@/components/backdrop/config";
-import { BackdropCadence } from "@/components/backdrop/cadence";
 
 type SceneProps = {
 	reduceMotion: boolean;
@@ -41,33 +40,21 @@ const createUniforms = () => {
 
 export function RenderScheduler({ reduceMotion, reveal }: Pick<SceneProps, "reduceMotion" | "reveal">) {
 	const invalidate = useThree((state) => state.invalidate);
-	const cadence = useRef(new BackdropCadence());
 
 	useEffect(() => {
 		invalidate();
 		if (reduceMotion || !reveal) return;
 		let animationFrame = 0;
-		let lastScroll = -Infinity;
-		const onScroll = () => { lastScroll = performance.now(); };
+		let previousFrame = 0;
 		const schedule = (timestamp: number) => {
-			if (cadence.current.step(timestamp, timestamp - lastScroll < 300)) {
+			if (document.visibilityState === "visible" && timestamp - previousFrame >= BACKDROP_ANIMATION.frameTime - 1) {
+				previousFrame = timestamp;
 				invalidate();
 			}
 			animationFrame = requestAnimationFrame(schedule);
 		};
-		const updateVisibility = () => {
-			cancelAnimationFrame(animationFrame);
-			cadence.current.pause();
-			if (document.visibilityState === "visible") animationFrame = requestAnimationFrame(schedule);
-		};
-		document.addEventListener("visibilitychange", updateVisibility);
-		window.addEventListener("scroll", onScroll, { passive: true });
-		updateVisibility();
-		return () => {
-			cancelAnimationFrame(animationFrame);
-			document.removeEventListener("visibilitychange", updateVisibility);
-			window.removeEventListener("scroll", onScroll);
-		};
+		animationFrame = requestAnimationFrame(schedule);
+		return () => cancelAnimationFrame(animationFrame);
 	}, [invalidate, reduceMotion, reveal]);
 
 	return null;
@@ -104,10 +91,7 @@ export function BackdropScene({ reduceMotion, reveal, onReady }: BackdropScenePr
 		state.previousScrollY = scrollY;
 
 		const active = !reduceMotion && reveal;
-		// Match the original 60fps response at either cadence: distance per frame
-		// otherwise doubles at 30fps, making the background suddenly accelerate.
-		const scrollVelocity = Math.abs(scrollDelta) / Math.max(delta, 1 / 240);
-		const activity = active ? Math.min(scrollVelocity / (BACKDROP_ANIMATION.scrollDistanceForMaxBoost * 60), 1) : 0;
+		const activity = active ? Math.min(Math.abs(scrollDelta) / BACKDROP_ANIMATION.scrollDistanceForMaxBoost, 1) : 0;
 		let targetNoiseRate = 1;
 		if (!active) {
 			state.noiseRate = state.returnStartRate = 1;
