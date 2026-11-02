@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "sync:resume": "bash scripts/sync_resume.sh",
+    "sync:transcript": "bash scripts/sync_transcript.sh",
     "test:audio": "node --experimental-strip-types --test tests/audio.test.mjs",
     "test:audio:http": "node --test tests/audio-http.test.mjs",
     "check:audio": "node scripts/check_audio.mjs",
