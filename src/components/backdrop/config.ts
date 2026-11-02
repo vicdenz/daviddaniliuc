@@ -23,7 +23,6 @@ export const SITE_ANIMATION = {
 } as const;
 
 export const BACKDROP_ANIMATION = {
-	frameTime: 1000 / 60,
 	revealDelay: SITE_ANIMATION.shaderRevealDelayMs / 1000,
 	revealDuration: SITE_ANIMATION.shaderRevealDurationMs / 1000,
 	scrollDistanceForMaxBoost: 40,

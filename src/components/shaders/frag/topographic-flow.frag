@@ -19,13 +19,14 @@ const float DITHER_COVERAGE = 2.5;
 const float DITHER_INK_PUNCH = 3.6;
 const float DITHER_CONTRAST = 0.49;
 const float DITHER_SOFTNESS = 0.84;
+const float PRIMARY_MARK_SOFTNESS = 0.35;
 const float DITHER_SPREAD = 0.92;
 const float SECONDARY_DITHER_ENABLED = 1.0;
 const float SECONDARY_DITHER_SIZE = 3.5;
 const float SECONDARY_DITHER_AMOUNT = 0.26;
 const float SECONDARY_DITHER_COVERAGE = 1.23;
 const float SECONDARY_DITHER_INK = 1.06;
-const float SECONDARY_DITHER_SOFTNESS = 0.19;
+const float SECONDARY_DITHER_SOFTNESS = 0.55;
 const float LAYER_GRAIN = 1.0;
 const float LAYER_GRID = 1.0;
 const float LAYER_TUNNEL = 1.0;
@@ -136,7 +137,7 @@ vec3 applyDither(vec3 source, vec3 paperColor) {
 	float thresholdSoftness = mix(0.002, 0.08, DITHER_SOFTNESS);
 	float occupied = smoothstep(threshold - thresholdSoftness, threshold + thresholdSoftness, coverage);
 	vec3 punched = clamp(paperColor + (source - paperColor) * DITHER_INK_PUNCH, 0.0, 1.0);
-	float primaryMark = ditherMark(localPoint, DITHER_PATTERN, DITHER_SOFTNESS);
+	float primaryMark = ditherMark(localPoint, DITHER_PATTERN, PRIMARY_MARK_SOFTNESS);
 	vec3 dithered = mix(paperColor, punched, occupied * primaryMark);
 	vec3 primaryResult = mix(source, dithered, DITHER_AMOUNT * LAYER_DITHER);
 
@@ -225,12 +226,11 @@ void main() {
 		float speed = mix(0.035, 0.065, seededHash(vec2(routeId), 547.0));
 		float progress = fract(uTime * speed + seededHash(vec2(routeId), 563.0));
 		float packetX = mix(-horizontalExtent * 0.58, horizontalExtent * 0.58, progress);
-		float packetY = routeHeight(routeId, packetX, uTime);
 		float portalScale = smoothstep(0.01, 0.10, progress) * (1.0 - smoothstep(0.88, 0.99, progress));
 		if (portalScale > 0.01) {
 			// Measuring vertical distance against the route at every fragment bends the
 			// beacon body with the signal trace instead of sliding a rigid rectangle.
-			vec2 packetPoint = vec2(point.x - packetX, point.y - routeHeight(routeId, point.x, uTime));
+			vec2 packetPoint = vec2(point.x - packetX, point.y - routeY);
 			float packet = roundedBox(packetPoint, vec2(0.028, 0.0034) * portalScale, 0.0034 * portalScale);
 			packetAlpha = max(packetAlpha, packet);
 		}
