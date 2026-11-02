@@ -37,14 +37,10 @@ export class BackdropCadence {
 			this.previousTime = timestamp;
 			return true;
 		}
-		const delta = Math.max(0, timestamp - this.previousTime);
+		// Bound isolated stalls to one sample instead of discarding them: repeated
+		// >250ms frames on a severely overloaded device still need to fall back.
+		const delta = Math.min(250, Math.max(0, timestamp - this.previousTime));
 		this.previousTime = timestamp;
-		// Ignore isolated long tasks (compilation, tab suspension, etc.).
-		if (delta > 250) {
-			this.resetSamples();
-			this.elapsed = 0;
-			return true;
-		}
 		this.warmup += delta;
 		if (this.targetFps === 60 && this.warmup >= WARMUP_MS) {
 			this.sampleTime += delta;

@@ -56,3 +56,31 @@ test("hidden time is excluded and resume preserves the selected rate", () => {
 	cadence.step(1800000, false);
 	assert.equal(cadence.frameTime, 1000 / 30);
 });
+
+test("severe overload is not mistaken for isolated long tasks", () => {
+	const cadence = new BackdropCadence();
+	run(cadence, 3, 24);
+	assert.equal(cadence.targetFps, 30);
+	assert.equal(cadence.frameTime, 1000 / 30);
+});
+
+test("settled 30fps pacing stays even without catch-up bursts", () => {
+	for (const hz of [60, 90, 120, 144]) {
+		const cadence = new BackdropCadence();
+		run(cadence, 30, 16);
+		run(cadence, hz, 1, { start: 16000 });
+		let previous = null;
+		for (let i = 0; i < hz * 10; i++) {
+			const time = 17000 + i * 1000 / hz;
+			if (!cadence.step(time, false)) continue;
+			if (previous !== null) {
+				const gap = time - previous;
+				// Fractional refresh ratios (e.g. 144/30) necessarily alternate
+				// adjacent refresh counts; never insert a burst or an extra pause.
+				assert.ok(gap >= Math.floor(hz / 30) * 1000 / hz - 0.02, `${hz}Hz gap ${gap}`);
+				assert.ok(gap <= Math.ceil(hz / 30) * 1000 / hz + 0.02, `${hz}Hz gap ${gap}`);
+			}
+			previous = time;
+		}
+	}
+});
