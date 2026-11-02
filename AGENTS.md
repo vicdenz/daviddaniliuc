@@ -22,6 +22,8 @@ Personal site built with Next.js, React, TypeScript, Three.js, and React Three F
 - `npm run check:audio` — validate the manifest and required local MP3s
 - `npm run sync:resume` — update the public resume PDF
 - `npm run sync:resume -- --check` — check without writing; exits 1 if missing or outdated
+- `npm run sync:transcript` — update the public transcript PDF
+- `npm run sync:transcript -- --check` — check without writing; exits 1 if missing or outdated
 - `npm run deploy:preview` / `npm run deploy:prod` — CLI preview/production deployments
 
 ## Deployment and audio
@@ -48,6 +50,8 @@ Personal site built with Next.js, React, TypeScript, Three.js, and React Three F
 ## Resume
 
 `scripts/sync_resume.sh` copies only `~/Documents/Resumes/David_Daniliuc_resume.pdf` to `public/resume.pdf`. Override the source with `RESUME_SOURCE_PDF`. Never modify the original PDF or LaTeX files. Sync, commit the public PDF, then deploy to publish updates.
+
+`scripts/sync_transcript.sh` copies only `~/Documents/Resumes/transcript/David_Daniliuc_academic_history.pdf` to `public/transcript.pdf`. Override the source with `TRANSCRIPT_SOURCE_PDF`. Never modify the original PDF. Sync, commit the public PDF, then deploy to publish updates.
 
 ## Constraints
 
