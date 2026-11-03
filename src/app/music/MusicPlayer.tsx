@@ -390,6 +390,8 @@ export default function MusicPlayer({ musicTracks }: { musicTracks: readonly Mus
 						value={Math.min(displayTime, duration)}
 						style={progressStyle}
 						onChange={(event) => setScrubTime(event.currentTarget.valueAsNumber)}
+						// An interrupted drag never fires change; drop the preview so the clock resumes.
+						onPointerCancel={() => setScrubTime(null)}
 					/>
 				</label>
 				<div className={styles.playbackStatus}>
