@@ -55,9 +55,15 @@ async function serveAudio(request: NextRequest, context: { params: Promise<{ tra
 	if (request.signal.aborted) {
 		return new NextResponse(null, { status: 499, headers: cacheHeaders });
 	}
-	const body = request.method === "HEAD" ? null : Readable.toWeb(createReadStream(filePath, {
-		start: range.start, end: range.end, signal: request.signal,
-	})) as ReadableStream<Uint8Array>;
+	let body: ReadableStream<Uint8Array> | null = null;
+	if (request.method !== "HEAD") {
+		const stream = createReadStream(filePath, { start: range.start, end: range.end, signal: request.signal });
+		// Seeks and closed tabs abort reads routinely; log only real I/O failures.
+		stream.on("error", (error) => {
+			if (error.name !== "AbortError") console.error("Audio stream failed", trackId, error);
+		});
+		body = Readable.toWeb(stream) as ReadableStream<Uint8Array>;
+	}
 	const response = new NextResponse(body, { status: range.partial ? 206 : 200, headers });
 	if (token) response.cookies.set(audioCookieName, token, audioCookieOptions);
 	return response;
