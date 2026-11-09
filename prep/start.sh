@@ -7,7 +7,7 @@ if ! test -d node_modules; then npm ci; fi
 if ! python3 -c 'import pytest' >/dev/null 2>&1; then
   if ! test -d .venv; then python3 -m venv .venv; fi
   .venv/bin/python -m pip install -r requirements.txt
-  export FASTPREP_PYTHON="$PWD/.venv/bin/python"
+  export PREP_PYTHON="$PWD/.venv/bin/python"
 fi
 if ! test -f data/practice.sqlite; then python3 scripts/import_problems.py; fi
 if ! test -f dist/index.html || test src/main.jsx -nt dist/index.html || test src/style.css -nt dist/index.html; then npm run build; fi
