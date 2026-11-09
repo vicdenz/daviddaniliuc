@@ -55,6 +55,21 @@ async function expectedBytes(track, start, length) {
 	} finally { await file.close(); }
 }
 
+async function selectedTrackTitle(query) {
+	const response = await fetch(new URL(`/music${query}`, base), { signal: AbortSignal.timeout(8000) });
+	assert.equal(response.status, 200);
+	const titles = [...(await response.text()).matchAll(/aria-label="Play ([^"]+)"/g)].map((match) => match[1]);
+	assert.equal(titles.length, 1, "Exactly one track must be selected");
+	return titles[0];
+}
+
+test("the track query selects a valid track and otherwise falls back to the first", async () => {
+	for (const track of tracks) assert.equal(await selectedTrackTitle(`?track=${encodeURIComponent(track.id)}`), track.title);
+	for (const query of ["", "?track=", "?track=not_a_song", "?track=toString", `?track=${tracks[0].id}&track=${tracks[1].id}`]) {
+		assert.equal(await selectedTrackTitle(query), tracks[0].title, query);
+	}
+});
+
 for (const track of tracks) {
 	test(`${track.id}: bare URLs and browser navigation remain blocked after visiting the player`, async () => {
 		const cookie = await session();

@@ -49,7 +49,7 @@ function PlayerIcon({ name }: { name: PlayerIconName }) {
 	return <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">{paths}</svg>;
 }
 
-export default function MusicPlayer({ musicTracks }: { musicTracks: readonly MusicTrack[] }) {
+export default function MusicPlayer({ musicTracks, initialTrack }: { musicTracks: readonly MusicTrack[]; initialTrack: number }) {
 	const audioRef = useRef<HTMLAudioElement>(null);
 	const progressRef = useRef<HTMLInputElement>(null);
 	const playbackIntent = useRef(false);
@@ -60,14 +60,23 @@ export default function MusicPlayer({ musicTracks }: { musicTracks: readonly Mus
 	const [recovery] = useState(() => new AudioPlaybackRecovery());
 	const [sessionReady, setSessionReady] = useState(false);
 	const [sessionAttempt, setSessionAttempt] = useState(0);
-	const [activeTrack, setActiveTrack] = useState(0);
+	const [activeTrack, setActiveTrack] = useState(initialTrack);
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [autoplay, setAutoplay] = useState(true);
 	const [playbackError, setPlaybackError] = useState(false);
 	const [currentTime, setCurrentTime] = useState(0);
 	const [scrubTime, setScrubTime] = useState<number | null>(null);
-	const [duration, setDuration] = useState(musicTracks[0].durationSeconds);
+	const [duration, setDuration] = useState(musicTracks[initialTrack].durationSeconds);
 	const track = musicTracks[activeTrack];
+
+	// A ?track= link only picks the starting song, so the address bar settles on /music.
+	// Keep the existing state: Next.js needs it to restore this entry on back/forward.
+	useEffect(() => {
+		const url = new URL(window.location.href);
+		if (!url.searchParams.has("track")) return;
+		url.searchParams.delete("track");
+		window.history.replaceState(window.history.state, "", url);
+	}, []);
 
 	useEffect(() => {
 		const controller = new AbortController();

@@ -32,7 +32,7 @@ Personal site built with Next.js, React, TypeScript, Three.js, and React Three F
 - CLI setup: `npx --yes vercel@65.2.0 login`, then `npx --yes vercel@65.2.0 link`. Select the existing `david-daniliucs-projects/daviddaniliuc` project.
 - CLI uploads include Git-ignored audio. `.vercelignore` excludes secrets and generated files. After upload-rule changes, verify with `npx --yes vercel@65.2.0 deploy --dry --format=json`.
 - Keep `private/` limited to audio. The JSON manifest is tracked; MP3s are ignored. Never force-add MP3s or rewrite Git history without an explicit request.
-- The manifest is the single track list for the player, endpoint and deployment check. Use unique IDs (`session` is reserved). `src/lib/music.ts` passes only display metadata and playback URLs to the client.
+- The manifest is the single track list for the player, endpoint and deployment check. Use unique IDs (`session` is reserved). `/music?track=<id>` opens paused on that track, then the address bar settles on `/music`; changing an ID breaks links shared with the old one. `src/lib/music.ts` passes only display metadata and playback URLs to the client.
 - `/api/audio/[trackId]` streams local files with range support. Next.js `outputFileTracingIncludes` bundles the MP3s. Preserve cookie validation, session renewal and private/no-store caching.
 - Vercel Preview and Production require `AUDIO_SESSION_SECRET` of at least 32 characters. Development has a local fallback. Environment changes require redeployment.
 - Public playback can still be captured; historical Git copies remain accessible.
