@@ -58,7 +58,7 @@ async function expectedBytes(track, start, length) {
 async function selectedTrackTitle(query) {
 	const response = await fetch(new URL(`/music${query}`, base), { signal: AbortSignal.timeout(8000) });
 	assert.equal(response.status, 200);
-	const titles = [...(await response.text()).matchAll(/aria-label="Play ([^"]+)"/g)].map((match) => match[1]);
+	const titles = [...(await response.text()).matchAll(/aria-label="Select ([^"]+)" aria-current="true"/g)].map((match) => match[1]);
 	assert.equal(titles.length, 1, "Exactly one track must be selected");
 	return titles[0];
 }
