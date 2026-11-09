@@ -35,6 +35,7 @@ Personal site: Next.js, React, TypeScript, Three.js, React Three Fiber.
 - Keep `private/` limited to audio. The manifest is tracked; MP3s are ignored, so fresh clones restore them from a local backup. Never force-add MP3s or rewrite Git history without an explicit request.
 - The manifest is the only track list for the player, endpoint and deployment check. IDs are unique and `session` is reserved. Its order is the display order; `"demo": true` shows a `[demo]` tag.
 - `/music?track=<id>` opens paused on that track, then the address bar settles on `/music`. Changing an ID breaks links shared with the old one.
+- Only the play control starts a song, including the system media play action. Selecting a song, next/previous and seeking all pause it, and a song stops when it ends.
 - `src/lib/music.ts` passes only display metadata and playback URLs to the client.
 - `/api/audio/[trackId]` streams with range support; `outputFileTracingIncludes` bundles the MP3s. Preserve cookie validation, session renewal and private/no-store caching.
 - Preview and Production need `AUDIO_SESSION_SECRET` (32+ characters), and changing it requires a redeploy. Only `next dev` has a fallback, so set it locally for `next start`.

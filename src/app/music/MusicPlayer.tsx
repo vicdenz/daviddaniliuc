@@ -62,7 +62,6 @@ export default function MusicPlayer({ musicTracks, initialTrack }: { musicTracks
 	const [sessionAttempt, setSessionAttempt] = useState(0);
 	const [activeTrack, setActiveTrack] = useState(initialTrack);
 	const [isPlaying, setIsPlaying] = useState(false);
-	const [autoplay, setAutoplay] = useState(true);
 	const [playbackError, setPlaybackError] = useState(false);
 	const [currentTime, setCurrentTime] = useState(0);
 	const [scrubTime, setScrubTime] = useState<number | null>(null);
@@ -175,27 +174,20 @@ export default function MusicPlayer({ musicTracks, initialTrack }: { musicTracks
 		}
 		startPlayback(audio);
 	};
-	const pausePlayback = (audio: HTMLAudioElement) => {
+	const pausePlayback = useCallback((audio: HTMLAudioElement) => {
 		playbackIntent.current = false;
 		clearStallWatch();
 		recovery.cancel();
 		audio.pause();
 		setIsPlaying(false);
-	};
-	const selectTrack = (index: number, shouldPlay?: boolean) => {
+	}, [clearStallWatch, recovery]);
+	// Only the play control starts a song; every other player action pauses it.
+	const selectTrack = (index: number) => {
 		const audio = audioRef.current;
 		if (!audio) return;
-		const continuePlayback = shouldPlay ?? playbackIntent.current;
-		if (index === activeTrack) {
-			if (shouldPlay !== false) requestPlayback(audio);
-			else pausePlayback(audio);
-			return;
-		}
+		pausePlayback(audio);
+		if (index === activeTrack) return;
 		recovery.reset();
-		clearStallWatch();
-		playbackIntent.current = continuePlayback;
-		audio.pause();
-		setIsPlaying(false);
 		setPlaybackError(false);
 		setActiveTrack(index);
 		setDuration(musicTracks[index].durationSeconds);
@@ -204,21 +196,18 @@ export default function MusicPlayer({ musicTracks, initialTrack }: { musicTracks
 		if (sessionReady) {
 			audio.setAttribute("src", musicTracks[index].source);
 			audio.load();
-			if (continuePlayback) startPlayback(audio);
 		}
 	};
 
+	// Past either end of the list this stays on the same song, which still pauses it.
 	const moveTrack = (step: number) => {
-		const nextTrack = activeTrack + step;
-		if (nextTrack < 0 || nextTrack >= musicTracks.length) return;
-		selectTrack(nextTrack);
+		selectTrack(Math.min(Math.max(activeTrack + step, 0), musicTracks.length - 1));
 	};
 	const handleTrackEnd = () => {
 		recovery.cancel();
 		clearStallWatch();
 		playbackIntent.current = false;
 		setIsPlaying(false);
-		if (autoplay && activeTrack < musicTracks.length - 1) selectTrack(activeTrack + 1, true);
 	};
 	const togglePlayback = () => {
 		const audio = audioRef.current;
@@ -260,11 +249,12 @@ export default function MusicPlayer({ musicTracks, initialTrack }: { musicTracks
 		const audio = audioRef.current;
 		setScrubTime(null);
 		if (!audio || !Number.isFinite(nextTime)) return;
+		pausePlayback(audio);
 		const clampedTime = Math.min(Math.max(nextTime, 0), duration);
 		if (recovery.resumeTime !== undefined) recovery.resumeTime = clampedTime;
 		else audio.currentTime = clampedTime;
 		setCurrentTime(clampedTime);
-	}, [duration, recovery]);
+	}, [duration, pausePlayback, recovery]);
 
 	// React's onChange fires for every input event, so dragging only previews the
 	// position. The native change event fires on release (and on each keyboard
@@ -398,16 +388,15 @@ export default function MusicPlayer({ musicTracks, initialTrack }: { musicTracks
 						disabled={!sessionReady}
 						value={Math.min(displayTime, duration)}
 						style={progressStyle}
-						onChange={(event) => setScrubTime(event.currentTarget.valueAsNumber)}
+						onChange={(event) => {
+							if (audioRef.current) pausePlayback(audioRef.current);
+							setScrubTime(event.currentTarget.valueAsNumber);
+						}}
 						// An interrupted drag never fires change; drop the preview so the clock resumes.
 						onPointerCancel={() => setScrubTime(null)}
 					/>
 				</label>
 				<div className={styles.playbackStatus}>
-					<button className={styles.autoplayToggle} type="button" onClick={() => setAutoplay((enabled) => !enabled)} aria-pressed={autoplay}>
-						<span className={styles.autoplayState} aria-hidden="true">{autoplay ? "✓" : "×"}</span>
-						<span>autoplay</span>
-					</button>
 					{playbackError && <span className={styles.playbackError} role="alert">an error occurred</span>}
 				</div>
 			</section>
@@ -421,7 +410,7 @@ export default function MusicPlayer({ musicTracks, initialTrack }: { musicTracks
 					{musicTracks.map((track, index) => (
 						<li className={index === activeTrack ? styles.activeTrack : undefined} key={track.source}>
 							<span className={styles.trackNumber}>{(index + 1).toString().padStart(2, "0")}</span>
-							<button type="button" onClick={() => selectTrack(index)} aria-label={index === activeTrack ? `Play ${track.title}` : `Select ${track.title}`}>
+							<button type="button" onClick={() => selectTrack(index)} aria-label={`Select ${track.title}`} aria-current={index === activeTrack ? "true" : undefined}>
 								<span className={styles.trackTitle}>{track.title}{track.demo && <span className={styles.trackDemo}>[demo]</span>}</span>
 							</button>
 						</li>
