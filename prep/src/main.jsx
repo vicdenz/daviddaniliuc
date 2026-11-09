@@ -978,6 +978,8 @@ function App() {
                       <article className="markdown">
                         <ReactMarkdown
                           remarkPlugins={[remarkGfm]}
+                          // Descriptions carry HTML comment markers for the importer; never show raw HTML.
+                          skipHtml
                           components={{
                             code: ({ children, className }) => (
                               <code className={className}>
