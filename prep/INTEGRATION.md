@@ -1,33 +1,28 @@
 # Prep
 
-The website serves the existing davidprep frontend at `/prep`. Code, environment variables, and cookies use `prep`/`PREP_*`; the visible branding is unchanged. Original problem folders remain in `Code/interview-prep/fastprep` and the other interview-prep folders. `prep/data/practice.sqlite` is an ignored local backup.
+The website serves the davidprep frontend at `/prep`; code, environment variables and cookies use `prep`/`PREP_*`. Original problem folders stay in `Code/interview-prep/`, and `prep/data/practice.sqlite` is an ignored local backup.
 
-The website repository is public. The SQLite snapshot, problem content, reviewed solutions, and legacy import files are Git-ignored and excluded from Vercel uploads. The browser receives private content only through authenticated `/prep/api` requests. Supabase keys never reach the frontend bundle.
+The repository is public. The SQLite snapshot, problem content, reviewed solutions and legacy import files are Git-ignored and excluded from Vercel uploads. The browser gets private content only through authenticated `/prep/api` requests, and Supabase keys never reach the frontend bundle.
 
-## Architecture and setup
+## Architecture
 
-- Supabase project `prep` (`bizfbtkhmyswpercocla`, Canada Central) has the private schema in `supabase/migrations/` and the copied problem data. `scripts/migrate_prep_to_supabase.py` seeds an empty schema from the ignored SQLite snapshot; it refuses to overwrite a populated database. The migration was checked row by row against the source for problems, cases, artifacts, and work.
-- Vercel project `daviddaniliuc` has `PREP_SUPABASE_URL`, `PREP_SUPABASE_SECRET_KEY`, `PREP_PASSWORD`, `PREP_SESSION_SECRET`, and `PREP_CPP_SNAPSHOT_ID` set for Production, Preview, and Development. Do not expose the secret key to browser code.
-- `npm run dev` builds the existing Vite UI and starts Next. `npm run build` builds both. `/prep` serves the UI document directly, with its assets under `/prep-ui/` and API under `/prep/api/`. The legacy `prep/server/` files support standalone local use; the website uses `prep/hosted/`.
-- Vercel Sandbox uses snapshot `snap_GkRQxSlvWLTPnhDlI9C0Pcy6r0ii`, with Python, pytest, and g++. Each batch gets a fresh non-persistent, network-disabled microVM. Submitted processes have CPU, memory, process-count, file/output and wall-time limits, plus privilege escalation disabled. No database credentials enter the guest.
-- Submit creates a durable job and executes the entire available suite in bounded batches. Run can select individual visible tests. The client advances the job until its complete result is available. Input/output JSON larger than 1 MB is compressed for transfer; large responses are compressed too. This preserves the existing 7.8 MB visible case within Vercel's transfer limit.
-- Final submission saving is transactional and idempotent. Completed jobs reference the submission instead of duplicating its code/results. Editor autosave remains independent from run snapshots, and changing a selected test during a run requires a fresh run.
-- Login sessions persist in Supabase, use HttpOnly/Secure cookies on HTTPS, and renew for up to 400 days as browsers permit. Login attempts are rate-limited atomically. All exposed tables have RLS and anonymous access revoked.
+- **Supabase:** project `prep` (`bizfbtkhmyswpercocla`, Canada Central) holds the private schema in `supabase/migrations/` and the problem data. `scripts/migrate_prep_to_supabase.py` seeds an empty schema from the SQLite snapshot and refuses to overwrite a populated database.
+- **Vercel:** project `daviddaniliuc` has `PREP_SUPABASE_URL`, `PREP_SUPABASE_SECRET_KEY`, `PREP_PASSWORD`, `PREP_SESSION_SECRET` and `PREP_CPP_SNAPSHOT_ID` in all environments.
+- **Serving:** `/prep` serves the UI document, with assets under `/prep-ui/` and the API under `/prep/api/`. The website uses `prep/hosted/`; `prep/server/` is only for standalone local use.
+- **Sandbox:** snapshot `snap_GkRQxSlvWLTPnhDlI9C0Pcy6r0ii` has Python, pytest and g++. Each batch gets a fresh, non-persistent, network-disabled microVM with limits on CPU, memory, processes, files, output and wall time. No database credentials enter the guest.
+- **Jobs:** Submit creates a durable job that runs the entire suite in bounded batches, and the client advances it until the result is ready. Run can select individual visible tests. JSON over 1 MB is compressed, which keeps the 7.8 MB visible case within Vercel's transfer limit.
+- **Saving:** final submissions are transactional and idempotent. Editor autosave is independent of run snapshots, and changing a selected test during a run requires a fresh run.
+- **Auth:** sessions persist in Supabase, use HttpOnly/Secure cookies on HTTPS, and renew for up to 400 days. Login attempts are rate-limited atomically. Exposed tables have RLS, and anonymous access is revoked.
 
-For local website development, run `npx vercel env pull .env.local` after linking the existing Vercel project. Apply schema changes with `npx supabase db push`. `node --env-file=.env.local --test tests/prep-http.test.mjs` checks a running site (set `PREP_TEST_URL` to use a preview), and `tests/prep-restart.test.mjs` verifies persistence across Next restarts. Tests use temporary problems and clean them up.
+## Local development
 
-The Vercel project is on Hobby: Sandbox has a free monthly usage allowance and pauses when exhausted. Supabase is on Free and may pause after low activity. Keep the local SQLite backup. The copied `deploy/` templates describe an obsolete standalone hosting approach.
+Run `npx vercel env pull .env.local` after linking the project, and apply schema changes with `npx supabase db push`. `node --env-file=.env.local --test tests/prep-http.test.mjs` checks a running site (`PREP_TEST_URL` targets a preview), and `tests/prep-restart.test.mjs` checks persistence across restarts. Tests use temporary problems and clean them up.
 
 ## Adding private questions
 
-Use the ignored `prep/docs/problem.example.json` format: a stable problem ID,
-authorized statement with source qualifications, metadata, Python/C++ class
-starters, callable argument types, and visible function cases. Test inputs are
-positional argument arrays. Include supplied examples and independently checked
-edge cases; do not invent source constraints or a difficulty rating.
+Use the ignored `prep/docs/problem.example.json` format: a stable problem ID, authorized statement with source qualifications, metadata, Python/C++ class starters, callable argument types, and visible function cases. Test inputs are positional argument arrays. Include supplied examples and independently checked edge cases; do not invent source constraints or a difficulty rating.
 
-Import and validate the private manifest locally, then copy only that problem
-into hosted Prep:
+Import and validate the manifest locally, then copy only that problem into hosted Prep:
 
 ```sh
 python3 prep/scripts/import_manifest.py prep/problems/collection/question.json
@@ -35,19 +30,22 @@ python3 scripts/import_prep_problem.py question-id
 python3 scripts/import_prep_problem.py question-id --apply
 ```
 
-The hosted importer defaults to a count-only preview and reads SQLite without
-writing to it. `--apply` uses `psql` and the existing ignored
-`prep/.env.supabase.local` and `supabase/.temp/pooler-url` connection files. It
-updates problem metadata and inserts missing cases, artifacts, and starter work
-in one transaction. Reimports preserve existing cases (including edits and
-deletions), saved code, notes, progress, and submissions. Changed case content
-needs a new case ID or an explicit edit through Prep. Keep manifests, generators,
-solutions, and validation reports in the ignored private folders; never commit
-them to this public repository. Database additions are immediately available to
-the authenticated app and do not require a website deployment.
+The hosted importer previews counts by default and only reads SQLite. `--apply` uses `psql` and the ignored `prep/.env.supabase.local` and `supabase/.temp/pooler-url` files. It updates problem metadata and inserts missing cases, artifacts and starter work in one transaction. Reimports preserve existing cases (including edits and deletions), saved code, notes, progress and submissions, so changed case content needs a new case ID or an edit through Prep.
 
-At setup, Vercel Hobby includes 5 active Sandbox CPU hours, 420 GB-hours of memory, 5,000 creations per month, and 15 GB of snapshot storage. Exceeding an allowance pauses creation rather than adding overage charges. These resources are shared across the account; compilation and full-suite runs consume them. Check [current Sandbox quotas](https://vercel.com/docs/sandbox/pricing) before changing plans. The [Supabase Free plan](https://supabase.com/docs/guides/platform/billing-on-supabase) includes a 500 MB database and 5 GB of egress. No paid plan was enabled.
+Keep manifests, generators, solutions and validation reports in the ignored private folders, and never commit them. Database additions are available immediately, with no website deployment.
 
-The header meter tracks this app's Sandbox CPU from the usage migration onward. Each session is recorded before creation, and Vercel's `activeCpuUsageMs` is saved after stopping, including compilation, preparation, and failed tests. Missing measurements use clearly marked conservative estimates; stale pending sessions reserve the maximum four-minute runtime. Day totals use the session's start date in America/Toronto. The daily recommendation is 10 CPU-minutes (five hours divided by 30 days), and crossing it only changes the indicator. The secondary total is a rolling 30-day app total, not the account's exact Vercel billing cycle. Earlier sessions and other projects are excluded; the Vercel dashboard remains authoritative. Usage refreshes after a run, on focus, and every 30 seconds while visible.
+## Limits
 
-To refresh the snapshot, use SQLite's backup API against the original database, then clear `auth_sessions` and `auth_attempts` in the copy. Do not copy the live SQLite file while its write-ahead log is active.
+- **Vercel Hobby:** at setup, Sandbox includes 5 active CPU hours, 420 GB-hours of memory, 5,000 creations per month and 15 GB of snapshot storage, shared across the account. Exceeding an allowance pauses creation rather than charging. Check [current quotas](https://vercel.com/docs/sandbox/pricing) before changing plans.
+- **Supabase Free:** includes a [500 MB database and 5 GB of egress](https://supabase.com/docs/guides/platform/billing-on-supabase). It may pause after low activity: the project host stops resolving in DNS, the pooler reports `tenant/user not found`, and it must be restored from the Supabase dashboard. Keep the local SQLite backup.
+- The `prep/deploy/` templates describe an obsolete standalone hosting approach.
+
+## Usage meter
+
+The header tracks this app's Sandbox CPU from the usage migration onward. Each session is recorded before creation, and `activeCpuUsageMs` is saved after stopping, including compilation, preparation and failed tests. Missing measurements use marked conservative estimates, and stale pending sessions reserve the four-minute maximum. Days use the session's start date in America/Toronto.
+
+The daily recommendation is 10 CPU-minutes (five hours over 30 days), and crossing it only changes the indicator. The secondary total is a rolling 30 days, not the account's billing cycle. Earlier sessions and other projects are excluded, so the Vercel dashboard remains authoritative. Usage refreshes after a run, on focus, and every 30 seconds while visible.
+
+## Refreshing the snapshot
+
+Use SQLite's backup API against the original database, then clear `auth_sessions` and `auth_attempts` in the copy. Do not copy the live file while its write-ahead log is active.
