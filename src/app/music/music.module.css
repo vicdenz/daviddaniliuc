@@ -11,7 +11,10 @@
 .readout { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 18px; }
 .readout p { margin: 0; }
 .readoutLabel { color: var(--music-muted); font-size: 13px; font-weight: 650; letter-spacing: 0.11em; }
-.readoutTitle { margin-top: 3px !important; font-size: clamp(24px, 3.4vw, 34px); font-weight: 690; letter-spacing: -0.045em; line-height: 1.06; }
+.readout > div { min-width: 0; max-width: 100%; }
+/* One fixed line, so switching songs never moves the player. */
+.readoutTitle { overflow: hidden; height: 1.35em; margin-top: 3px !important; font-size: clamp(24px, 3.4vw, 34px); font-weight: 690; letter-spacing: -0.045em; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
+.readoutTitle .trackDemo { display: inline; padding-bottom: 0; border-bottom: 0; text-decoration: underline 2px; text-decoration-skip-ink: none; text-underline-offset: 3px; }
 .time { flex: none; color: var(--music-muted); font-size: 14px; font-variant-numeric: tabular-nums; font-weight: 600; }
 
 .transport { display: flex; align-items: stretch; gap: 6px; }
