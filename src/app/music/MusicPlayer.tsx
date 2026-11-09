@@ -376,7 +376,7 @@ export default function MusicPlayer({ musicTracks, initialTrack }: { musicTracks
 				<div className={styles.readout}>
 					<div>
 						<p className={styles.readoutLabel}>now playing</p>
-						<p className={styles.readoutTitle} aria-live="polite">{track.title}</p>
+						<p className={styles.readoutTitle} aria-live="polite">{track.title}{track.demo && <span className={styles.trackDemo}>[demo]</span>}</p>
 					</div>
 					<p className={styles.time}>{formatTime(displayTime)} / {formatTime(duration, true)}</p>
 				</div>
@@ -422,7 +422,7 @@ export default function MusicPlayer({ musicTracks, initialTrack }: { musicTracks
 						<li className={index === activeTrack ? styles.activeTrack : undefined} key={track.source}>
 							<span className={styles.trackNumber}>{(index + 1).toString().padStart(2, "0")}</span>
 							<button type="button" onClick={() => selectTrack(index)} aria-label={index === activeTrack ? `Play ${track.title}` : `Select ${track.title}`}>
-								<span className={styles.trackTitle}>{track.title}{track.wip && <span className={styles.trackWip}>[WIP]</span>}</span>
+								<span className={styles.trackTitle}>{track.title}{track.demo && <span className={styles.trackDemo}>[demo]</span>}</span>
 							</button>
 						</li>
 					))}

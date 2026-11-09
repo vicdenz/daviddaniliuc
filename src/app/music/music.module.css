@@ -85,7 +85,7 @@
 .trackNumber { align-self: center; color: var(--music-muted); font-size: 12px; font-weight: 750; font-variant-numeric: tabular-nums; letter-spacing: 0.08em; }
 .trackList button { min-width: 0; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .trackTitle { display: block; overflow: hidden; font-size: clamp(19px, 2.4vw, 23px); font-weight: 690; letter-spacing: -0.035em; line-height: 1.1; text-overflow: ellipsis; white-space: nowrap; }
-.trackWip { display: inline-block; margin-left: 0.45em; padding-bottom: 2px; border-bottom: 2px solid currentColor; color: var(--music-muted); }
+.trackDemo { display: inline-block; margin-left: 0.45em; padding-bottom: 2px; border-bottom: 2px solid currentColor; color: var(--music-muted); }
 .trackList button:focus-visible .trackTitle { color: var(--music-muted); }
 .trackList button:focus-visible { outline: 2px solid var(--blue); outline-offset: 4px; }
 .srOnly { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }

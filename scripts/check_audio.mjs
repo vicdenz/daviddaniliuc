@@ -8,7 +8,7 @@ for (const track of tracks) {
 		|| track.id === "session" || ids.has(track.id) || typeof track.title !== "string" || !track.title.trim()
 		|| typeof track.filename !== "string" || !/^[a-zA-Z0-9_-]+\.mp3$/.test(track.filename)
 		|| !Number.isFinite(track.durationSeconds) || track.durationSeconds <= 0
-		|| (track.wip !== undefined && typeof track.wip !== "boolean")) {
+		|| (track.demo !== undefined && typeof track.demo !== "boolean")) {
 		throw new Error("Invalid track manifest: use unique IDs (excluding session), safe MP3 filenames, titles and positive durations.");
 	}
 	ids.add(track.id);
